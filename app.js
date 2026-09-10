@@ -29,6 +29,8 @@ function dot(a, b) {
 const tilt = { x: 0, y: 0 };
 const eased = { x: 0, y: 0 };
 let origin = null;
+let veil = 1;
+let started = false;
 
 function onOrientation(e) {
   if (e.alpha == null || e.beta == null || e.gamma == null) return;
@@ -56,9 +58,10 @@ function smoothstep(t) {
 function frame() {
   eased.x += (tilt.x - eased.x) * SMOOTHING;
   eased.y += (tilt.y - eased.y) * SMOOTHING;
+  if (started) veil *= 0.94;
 
   const dist = Math.hypot(eased.x, eased.y);
-  const fold = smoothstep((dist - DEAD_ZONE) / (MAX_TILT - DEAD_ZONE));
+  const fold = Math.max(veil, smoothstep((dist - DEAD_ZONE) / (MAX_TILT - DEAD_ZONE)));
   const angle = Math.atan2(-eased.x, eased.y) / DEG;
 
   root.setProperty('--fold', fold.toFixed(3));
@@ -91,6 +94,19 @@ async function requestGyro() {
 gate.addEventListener('click', async () => {
   await requestGyro();
   gate.classList.add('is-hidden');
+  started = true;
 }, { once: true });
+
+// Recenter
+let lastTap = 0;
+
+document.addEventListener('pointerdown', (e) => {
+  if (e.timeStamp - lastTap < 300) origin = null;
+  lastTap = e.timeStamp;
+});
+
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) origin = null;
+});
 
 requestAnimationFrame(frame);
