@@ -94,25 +94,25 @@
   <dialog class="sheet sheet--lid glass">
     <p class="sheet__eyebrow">Solo</p>
     <h2>Close the lid to fold</h2>
-    <p class="hid-only">
-      Solo folds the picture as you close your MacBook.
-      Allow the lid sensor, pick the Apple device in the list,
-      then lower the lid slowly.
+    <p>
+      The smooth fold needs a small helper on your Mac.
+      It polls the hinge on your machine and nothing is uploaded.
+      The first run sets up its own Python environment,
+      so you do not install anything system-wide.
     </p>
-    <p class="no-hid-only">
-      This browser cannot read the MacBook hinge.
-      Safari and Firefox have no lid API.
-      Open this same page in Google Chrome to fold with the lid.
-    </p>
-    <ol class="tiles hid-only">
-      <li>Click Allow lid sensor.</li>
-      <li>Pick the unnamed Apple device and connect.</li>
+    <ol class="tiles">
+      <li>Download <a class="sheet__link" href="bridge/lid-bridge.py" download>lid-bridge.py</a>.</li>
+      <li>In Terminal, run the command below.</li>
       <li>Close the lid slowly.</li>
     </ol>
-    <p class="sheet__status" role="status" hidden></p>
+    <code class="sheet__cmd">python3 ~/Downloads/lid-bridge.py</code>
+    <p class="hid-only">
+      Chrome can Allow the lid sensor instead, without Terminal,
+      but that path only updates about once a second.
+    </p>
+    <p class="sheet__status" role="status">Waiting for the lid stream…</p>
     <div class="sheet__row">
-      <button class="sheet__cta hid-only" type="button" data-action="allow" autofocus>Allow lid sensor</button>
-      <button class="sheet__cta no-hid-only" type="button" data-action="copy">Copy link for Chrome</button>
+      <button class="sheet__cta hid-only" type="button" data-action="allow">Allow lid sensor</button>
       <button class="sheet__cta sheet__cta--quiet" type="button" data-action="preview">Preview with trackpad</button>
       <a class="sheet__credit" href="https://www.instagram.com/archieauburn/" target="_blank" rel="noopener">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">

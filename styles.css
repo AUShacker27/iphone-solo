@@ -297,6 +297,26 @@ body {
   display: none;
 }
 
+.sheet__link {
+  color: #fff;
+  text-underline-offset: 3px;
+}
+
+.sheet__cmd {
+  display: block;
+  margin: 0 0 18px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgb(0 0 0 / 0.28);
+  box-shadow: var(--glass-rim);
+  color: rgb(255 255 255 / 0.92);
+  font: 500 13px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+  -webkit-user-select: all;
+  user-select: all;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
 .has-hid .no-hid-only,
 .no-hid .hid-only {
   display: none;

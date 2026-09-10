@@ -56,10 +56,11 @@ only after the lid has already come down that far.
 `FOLD_CLOSED` is where the picture is fully gone
 (default `15`). The sensor ships in MacBooks from 2019 on.
 
-Safari and Firefox have no WebHID,
-so the sheet asks you to copy the page link into Google Chrome.
-Trackpad preview (scroll or the arrow keys) is a fallback,
-and the page also listens for the bridge below.
+Safari and Firefox have no WebHID.
+The opening sheet walks through the helper:
+download `lid-bridge.py` and run it in Terminal.
+The page picks up `127.0.0.1:8471/lid` on its own.
+Trackpad preview remains as a fallback.
 The Fullscreen pill uses the real fullscreen API here.
 
 ### The bridge

@@ -25,7 +25,6 @@ function createLaptopScene(canvas) {
   const lidSheet = document.querySelector('.sheet--lid');
   const lidStatus = lidSheet.querySelector('.sheet__status');
   const allow = lidSheet.querySelector('[data-action="allow"]');
-  const copy = lidSheet.querySelector('[data-action="copy"]');
   const preview = lidSheet.querySelector('[data-action="preview"]');
   const renderer = createLid(canvas);
   const hid = navigator.hid;
@@ -172,15 +171,6 @@ function createLaptopScene(canvas) {
     }
   }
 
-  async function copyForChrome() {
-    try {
-      await navigator.clipboard.writeText(location.href);
-      setStatus('Copied. Paste the link in Google Chrome, then allow the lid sensor.');
-    } catch {
-      setStatus(location.href);
-    }
-  }
-
   // Stream
   function attachStream(source) {
     if (streamSource && streamSource !== source) {
@@ -195,6 +185,7 @@ function createLaptopScene(canvas) {
       onAngle(Number(e.data), false);
     };
     source.onerror = () => { streamLive = false; };
+    setStatus('Lid stream connected.');
     begin('Close the lid slowly to fold the picture.');
   }
 
@@ -231,7 +222,6 @@ function createLaptopScene(canvas) {
   }
 
   allow.addEventListener('click', allowSensor);
-  copy.addEventListener('click', copyForChrome);
   preview.addEventListener('click', () => {
     begin('Scroll or use the arrow keys to fold the picture.');
   });
