@@ -42,7 +42,7 @@ function showUnavailable(message = '') {
 }
 
 // Renderer
-const renderer = createRenderer(canvas);
+const renderer = createFold(canvas);
 
 if (renderer) {
   renderer.load(DEFAULT_IMAGE);

@@ -1,4 +1,4 @@
-const MAX_STRETCH = 1.5;
+const MAX_STRETCH = 1.7;
 
 const VERTEX = `#version 300 es
 precision highp float;
@@ -10,14 +10,14 @@ void main() {
   v_uv = a_position * 0.5 + 0.5;
 }`;
 
-const FOLD = `#version 300 es
+// Shared shader head
+const HEAD = `#version 300 es
 precision highp float;
 uniform sampler2D u_image;
 uniform vec2 u_imageSize;
 uniform vec2 u_cover;
 uniform float u_aspect;
 uniform float u_turn;
-uniform float u_hinge;
 in vec2 v_uv;
 out vec4 outColor;
 
@@ -33,52 +33,7 @@ vec3 sampleImage(vec2 uv, float sigma) {
   if (sigma >= 2.0) return blurred;
   return mix(textureLod(u_image, tuv, 0.0).rgb, blurred, smoothstep(0.0, 2.0, sigma));
 }
-
-void main() {
-  float turn = clamp(u_turn, 0.0, 1.0);
-  if (turn <= 0.00001) {
-    outColor = vec4(sampleImage(v_uv, 0.0), 1.0);
-    return;
-  }
-
-  // Hinge projection
-  float outer = 1.0 - u_hinge;
-  float fromHinge = abs(v_uv.x - u_hinge);
-  float tilt = turn * HALF_PI;
-  float bend = min(tilt, MAX_TILT);
-  float cosine = cos(bend);
-  float sine = sin(bend);
-
-  float eye = 2.4 * max(u_aspect, 1.0);
-  float depth = fromHinge * u_aspect * sine;
-  float perspective = eye / (eye - depth);
-  vec2 plane;
-  plane.x = u_hinge + (v_uv.x - u_hinge) * cosine * perspective;
-  plane.y = 0.5 + (v_uv.y - 0.5) * perspective;
-
-  // Defocus
-  float blurAngle = pow(smoothstep(0.0, HALF_PI, tilt), 0.5);
-  float blurSpread = pow(smoothstep(0.0, 0.7, fromHinge), 1.45);
-  float defocus = blurAngle * mix(0.18, 1.0, blurSpread);
-  float sigma = u_imageSize.x * BLUR * defocus;
-
-  // Vertical margins
-  float softness = fwidth(v_uv.y) + 2.0 * sigma / u_imageSize.y;
-  float mask = 1.0 - smoothstep(0.5 - softness, 0.5 + softness, abs(plane.y - 0.5));
-
-  // Glass
-  vec3 color = sampleImage(plane, sigma);
-  float glass = sine * pow(fromHinge, 1.6);
-  color *= 1.0 - mix(0.28, 0.06, outer) * glass;
-  float reflection = exp(-pow((fromHinge - 0.70) / 0.30, 2.0)) * sine;
-  color += vec3(0.82, 0.85, 0.86) * reflection * 0.025;
-
-  // Void
-  float fade = clamp((fromHinge - 0.26) / 0.74, 0.0, 1.0);
-  color *= 1.0 - 0.7 * blurAngle * fade;
-
-  outColor = vec4(mix(DARK, color, mask), 1.0);
-}`;
+`;
 
 const GAUSS = `#version 300 es
 precision highp float;
@@ -97,7 +52,7 @@ void main() {
   outColor = color;
 }`;
 
-function createRenderer(canvas) {
+function createStage(canvas, fragment, extra = []) {
   const gl = canvas.getContext('webgl2', { antialias: false, alpha: false, powerPreference: 'high-performance' });
   if (!gl) return null;
 
@@ -110,10 +65,10 @@ function createRenderer(canvas) {
     return shader;
   }
 
-  function link(fragment) {
+  function link(source) {
     const program = gl.createProgram();
     gl.attachShader(program, compile(gl.VERTEX_SHADER, VERTEX));
-    gl.attachShader(program, compile(gl.FRAGMENT_SHADER, fragment));
+    gl.attachShader(program, compile(gl.FRAGMENT_SHADER, source));
     gl.linkProgram(program);
     if (!gl.getProgramParameter(program, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(program));
     return program;
@@ -123,8 +78,8 @@ function createRenderer(canvas) {
     return Object.fromEntries(names.map((name) => [name, gl.getUniformLocation(program, name)]));
   }
 
-  const fold = link(FOLD);
-  const foldU = uniforms(fold, ['u_image', 'u_imageSize', 'u_cover', 'u_aspect', 'u_turn', 'u_hinge']);
+  const scene = link(HEAD + fragment);
+  const sceneU = uniforms(scene, ['u_image', 'u_imageSize', 'u_cover', 'u_aspect', 'u_turn', ...extra]);
   const gauss = link(GAUSS);
   const gaussU = uniforms(gauss, ['u_source', 'u_step', 'u_level']);
 
@@ -225,22 +180,22 @@ function createRenderer(canvas) {
     gl.viewport(0, 0, width, height);
   }
 
-  function draw(turn, hinge) {
+  function draw(turn, set) {
     resize();
 
     const aspect = canvas.width / canvas.height;
     const imageAspect = imageSize[0] / imageSize[1];
 
-    gl.useProgram(fold);
+    gl.useProgram(scene);
     gl.bindVertexArray(vao);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.uniform1i(foldU.u_image, 0);
-    gl.uniform2f(foldU.u_imageSize, imageSize[0], imageSize[1]);
-    gl.uniform2f(foldU.u_cover, Math.min(1, aspect / imageAspect), Math.min(1, imageAspect / aspect));
-    gl.uniform1f(foldU.u_aspect, aspect);
-    gl.uniform1f(foldU.u_turn, turn);
-    gl.uniform1f(foldU.u_hinge, hinge);
+    gl.uniform1i(sceneU.u_image, 0);
+    gl.uniform2f(sceneU.u_imageSize, imageSize[0], imageSize[1]);
+    gl.uniform2f(sceneU.u_cover, Math.min(1, aspect / imageAspect), Math.min(1, imageAspect / aspect));
+    gl.uniform1f(sceneU.u_aspect, aspect);
+    gl.uniform1f(sceneU.u_turn, turn);
+    if (set) set(gl, sceneU);
     gl.drawArrays(gl.TRIANGLES, 0, 6);
   }
 
