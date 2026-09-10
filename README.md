@@ -8,61 +8,60 @@ while the hardware sweeps through it:
 the image frosts over and slips into black
 without ever changing its size.
 iPhone Solo does the same thing on a regular iPhone,
-driven by the gyroscope instead of a hinge.
-Hold the phone still and the picture is sharp, edge to edge.
-Turn it left or right, as if around a hinge,
-and the picture stays put, frosts over
-and disappears into the void from the receding side.
-Pitching the phone forward or back does nothing,
-just like a hinge only moves one way.
+driven by gravity instead of a hinge.
+Hold the phone flat, screen to the sky, and the picture is sharp.
+Roll it left or right, like closing a book,
+and the display folds away from the edge you lift.
 
 ## Install
 
 1. Host the folder anywhere that serves it over HTTPS
-   (GitHub Pages works, and motion access needs a secure origin).
-2. Open it in Safari on the iPhone.
+   (motion access needs a secure origin).
+2. Open it in Safari on the iPhone and allow motion when asked.
 3. Share → Add to Home Screen.
-4. Launch it from the icon and tap once to grant motion access.
+4. Launch it from the icon for an edge to edge window.
 
-The page also runs in a normal tab,
-but the effect is meant for the edge to edge standalone window.
+The page also runs in a Safari tab,
+where a Fullscreen pill explains the steps above.
 
-## Gestures
+## Controls
 
-| Gesture        | Action                                  |
-| -------------- | --------------------------------------- |
-| Tap            | Grant motion access and unfold          |
-| Double tap     | Recenter, current pose becomes neutral  |
-| Long press     | Choose a background photo               |
+Pills at the top of the screen:
 
-The origin is also reset every time the app comes back
-from the background.
+- **Choose image** — pick a photo from the library
+- **Use default** — go back to `backgrounds/default.png`
+  (shown only while a custom photo is set)
+- **Fullscreen** and **GitHub** — shown only in a browser tab
+
+Tap the picture to hide or show the pills.
+They stay visible until a custom photo is chosen,
+after that they start hidden.
 
 ## Backgrounds
 
 The default picture lives in `backgrounds/default.png`.
 To ship a different one, replace that file
-or point `--bg` in `styles.css` at another path.
+or change `DEFAULT_IMAGE` at the top of `app.js`.
+A photo chosen on the phone is stored on the device
+in IndexedDB and used until *Use default* is tapped.
+Images are drawn with cover, so nothing is stretched
+and there are no borders.
 
-On the phone, hold the screen to open the sheet,
-pick a photo and it is stored on the device
-and used until you choose *Use Default*.
+## How it works
 
-## Tuning
+`render.js` draws everything on a WebGL 2 canvas.
+The canvas is treated as the physical display:
+each pixel is projected into a stationary image plane
+that rotates about a hinge at the left or right edge,
+with perspective, so the whole width stays painted
+and only the top and bottom margins open up.
+Blur is sampled from a Gaussian mip chain
+built once whenever an image is loaded,
+and grows with the tilt and with the distance from the hinge.
+A glass tint, a faint reflection
+and a black fade toward the far edge finish it.
 
-The feel is controlled by a few constants at the top of `app.js`:
-
-- `MAX_TILT` — degrees of turn for a full fold
-- `DEAD_ZONE` — degrees ignored around the neutral pose
-- `SHIFT` — how far the picture slides sideways at full fold, in pixels
-- `SMOOTHING` — how quickly the effect follows the sensor
-
-The look itself is in `styles.css`,
-where the `.content`, `.layer--frost` and `.void` rules
-read a single `--fold` progress variable.
-
-## Without a gyroscope
-
-On a desktop, or when motion access is denied,
-the cursor position drives the same tilt
-so the effect can still be previewed.
+`app.js` reads gravity from `devicemotion`,
+turns it into a roll angle, doubles it
+and clamps it to a half turn,
+then eases toward it every frame.
