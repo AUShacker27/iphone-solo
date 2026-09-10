@@ -74,7 +74,7 @@ after that they start hidden.
 ## Backgrounds
 
 The default pictures live in `backgrounds/`:
-`default.png` for phones and `default-mac.jpg` for laptops.
+`default.png` for phones and `default-mac.png` for laptops.
 To ship different ones, replace those files
 or change `defaultImage` in `phone.js` and `laptop.js`.
 Use a screenshot at the device's native resolution;

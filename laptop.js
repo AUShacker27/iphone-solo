@@ -66,7 +66,7 @@ function createLaptopScene(canvas) {
   lidCard.addEventListener('cancel', (e) => e.preventDefault());
 
   return {
-    defaultImage: 'backgrounds/default-mac.jpg',
+    defaultImage: 'backgrounds/default-mac.png',
     storageKey: 'background-mac',
     renderer,
     live: () => live,
