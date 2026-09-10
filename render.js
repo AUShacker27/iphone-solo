@@ -1,4 +1,4 @@
-const MAX_STRETCH = 1.7;
+const MAX_STRETCH = 1.5;
 
 const VERTEX = `#version 300 es
 precision highp float;
