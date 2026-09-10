@@ -116,6 +116,10 @@ body {
   gap: 8px;
 }
 
+.sheet[hidden] {
+  display: none;
+}
+
 .sheet__group {
   overflow: hidden;
   border-radius: 14px;
@@ -143,4 +147,31 @@ body {
 
 .sheet__item--cancel {
   font-weight: 600;
+}
+
+/* Browser-only footer */
+.about {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
+  background: linear-gradient(transparent, rgb(0 0 0 / 0.6));
+  font-size: 13px;
+  text-align: center;
+  color: rgb(255 255 255 / 0.7);
+}
+
+.about a {
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.is-standalone .about {
+  display: none;
 }

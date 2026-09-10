@@ -8,6 +8,11 @@ const gate = document.querySelector('.gate');
 
 const DEG = Math.PI / 180;
 
+// Standalone flag
+if (navigator.standalone || matchMedia('(display-mode: standalone)').matches) {
+  document.documentElement.classList.add('is-standalone');
+}
+
 // Orientation math
 function axesOf(alpha, beta, gamma) {
   const cX = Math.cos(beta * DEG), sX = Math.sin(beta * DEG);
