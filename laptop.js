@@ -181,7 +181,6 @@ function createLaptopScene(canvas) {
     streamLive = true;
     coasting = false;
     setStatus('Lid stream connected.');
-    begin('Close the lid slowly to fold the picture.');
   }
 
   function onStreamMessage(source, e) {
@@ -226,6 +225,11 @@ function createLaptopScene(canvas) {
   }
 
   allow.addEventListener('click', allowSensor);
+  lidSheet.querySelector('[data-action="continue"]').addEventListener('click', () => {
+    begin(streamLive
+      ? 'Close the lid slowly to fold the picture.'
+      : 'Scroll or use the arrow keys to fold the picture.');
+  });
   preview.addEventListener('click', () => {
     begin('Scroll or use the arrow keys to fold the picture.');
   });
