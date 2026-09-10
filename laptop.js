@@ -2,7 +2,15 @@ const BRIDGE_URL = 'http://127.0.0.1:8471/lid';
 const CLOSED_ANGLE = 15;
 const WHEEL_STEP = 1 / 1200;
 const KEY_STEP = 0.05;
-const LID_SENSOR = { vendorId: 0x05AC, productId: 0x8104, usagePage: 0x20, usage: 0x8A };
+const LID_VENDOR = 0x05AC;
+const LID_PRODUCT = 0x8104;
+const LID_USAGE_PAGE = 0x20;
+const LID_USAGE = 0x8A;
+const LID_FILTERS = [
+  { vendorId: LID_VENDOR, productId: LID_PRODUCT, usagePage: LID_USAGE_PAGE, usage: LID_USAGE },
+  { vendorId: LID_VENDOR, productId: LID_PRODUCT },
+  { vendorId: LID_VENDOR, usagePage: LID_USAGE_PAGE, usage: LID_USAGE },
+];
 const ANGLE_REPORT = 1;
 const SLOW_FOLLOW = 3;
 
@@ -11,6 +19,7 @@ function createLaptopScene(canvas) {
   const lidSheet = document.querySelector('.sheet--lid');
   const lidStatus = lidSheet.querySelector('.sheet__status');
   const allow = lidSheet.querySelector('[data-action="allow"]');
+  const copy = lidSheet.querySelector('[data-action="copy"]');
   const preview = lidSheet.querySelector('[data-action="preview"]');
   const renderer = createLid(canvas);
   const hid = navigator.hid;
@@ -21,6 +30,7 @@ function createLaptopScene(canvas) {
   let open = null;
   let live = false;
   let lastReport = 0;
+  let hidDevice = null;
 
   document.documentElement.classList.add(hid ? 'has-hid' : 'no-hid');
 
@@ -52,39 +62,64 @@ function createLaptopScene(canvas) {
 
   // Sensor
   function isLidSensor(device) {
-    return device.collections.some(
-      (collection) => collection.usagePage === LID_SENSOR.usagePage && collection.usage === LID_SENSOR.usage,
-    );
+    if (device.collections?.some((c) => c.usagePage === LID_USAGE_PAGE && c.usage === LID_USAGE)) {
+      return true;
+    }
+    return device.vendorId === LID_VENDOR && device.productId === LID_PRODUCT;
+  }
+
+  function parseAngle(data) {
+    const offset = data.byteLength > 2 && data.getUint8(0) === ANGLE_REPORT ? 1 : 0;
+    if (data.byteLength < offset + 2) return NaN;
+    let raw = data.getUint16(offset, true);
+    if (raw > 360) raw /= 100;
+    return raw;
   }
 
   function onReport(e) {
-    if (e.reportId !== ANGLE_REPORT || e.data.byteLength < 2) return;
+    if (e.reportId !== ANGLE_REPORT && e.reportId !== 0) return;
+    const angle = parseAngle(e.data);
+    if (!Number.isFinite(angle)) return;
     const now = performance.now();
     const gap = Math.min(1, (now - lastReport) / 1000);
     lastReport = now;
     follow = Math.min(FOLLOW, Math.max(SLOW_FOLLOW, 4 / gap));
-    onAngle(e.data.getUint16(0, true));
+    onAngle(angle);
   }
 
   async function listen(device) {
+    if (hidDevice && hidDevice !== device) {
+      try { hidDevice.removeEventListener('inputreport', onReport); } catch { /* already gone */ }
+      try { await hidDevice.close(); } catch { /* already closed */ }
+    }
     if (!device.opened) await device.open();
+    hidDevice = device;
     device.addEventListener('inputreport', onReport);
     begin('Close the lid slowly to fold the picture.');
   }
 
+  async function pickSensor(candidates) {
+    return candidates.find((device) => {
+      return device.collections?.some((c) => c.usagePage === LID_USAGE_PAGE && c.usage === LID_USAGE);
+    }) || candidates.find(isLidSensor);
+  }
+
   async function reconnect() {
-    if (!hid) return;
-    const device = (await hid.getDevices()).find(isLidSensor);
-    if (device) await listen(device);
+    if (!hid) return false;
+    const device = await pickSensor(await hid.getDevices());
+    if (!device) return false;
+    await listen(device);
+    return true;
   }
 
   async function allowSensor() {
     setStatus('');
     allow.disabled = true;
     try {
-      const [device] = await hid.requestDevice({ filters: [LID_SENSOR] });
+      const picked = await hid.requestDevice({ filters: LID_FILTERS });
+      const device = await pickSensor([...(await hid.getDevices()), ...picked]);
       if (!device) {
-        setStatus('No sensor was picked. It ships in MacBooks from 2019 on.');
+        setStatus('No lid sensor was selected. It ships in MacBooks from 2019 on.');
         return;
       }
       await listen(device);
@@ -92,6 +127,15 @@ function createLaptopScene(canvas) {
       setStatus(error.message || 'The lid sensor could not be opened.');
     } finally {
       allow.disabled = false;
+    }
+  }
+
+  async function copyForChrome() {
+    try {
+      await navigator.clipboard.writeText(location.href);
+      setStatus('Copied. Paste the link in Google Chrome, then allow the lid sensor.');
+    } catch {
+      setStatus(location.href);
     }
   }
 
@@ -117,8 +161,14 @@ function createLaptopScene(canvas) {
     if (e.key === 'ArrowUp') target = clamp(target - KEY_STEP);
   });
 
-  allow.addEventListener('click', allowSensor);
+  if (hid) {
+    hid.addEventListener('connect', (e) => {
+      if (isLidSensor(e.device)) listen(e.device);
+    });
+  }
 
+  allow.addEventListener('click', allowSensor);
+  copy.addEventListener('click', copyForChrome);
   preview.addEventListener('click', () => {
     begin('Scroll or use the arrow keys to fold the picture.');
   });

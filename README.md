@@ -49,13 +49,11 @@ The widest angle seen counts as flat
 and the fold completes at fifteen degrees.
 The sensor ships in MacBooks from 2019 on.
 
-Safari and Firefox have no WebHID.
-There the sheet offers a trackpad preview
-(scroll or the arrow keys fold the picture),
+Safari and Firefox have no WebHID,
+so the sheet asks you to copy the page link into Google Chrome.
+Trackpad preview (scroll or the arrow keys) is a fallback,
 and the page also listens for the bridge below.
-The Fullscreen pill uses the real fullscreen API here,
-and a one-time sheet points to Chrome's Install
-or Safari's Add to Dock for a window without browser bars.
+The Fullscreen pill uses the real fullscreen API here.
 
 ### The bridge
 

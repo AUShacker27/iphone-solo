@@ -10,7 +10,6 @@ const unavailable = document.querySelector('.unavailable');
 const status = unavailable.querySelector('.unavailable__status');
 const retry = unavailable.querySelector('[data-action="retry"]');
 const installSheet = document.querySelector('.sheet--install');
-const dockSheet = document.querySelector('.sheet--dock');
 const fullscreen = document.querySelector('[data-action="fullscreen"]');
 
 // Device
@@ -51,19 +50,17 @@ function hideUnavailable() {
   unavailable.hidden = true;
 }
 
-// Install guide
-const installGuide = laptop ? dockSheet : installSheet;
-
+// Install guide (phones only)
 function onboard(done) {
-  if (launchedAsApp || localStorage.getItem(INSTALL_KEY)) {
+  if (laptop || launchedAsApp || localStorage.getItem(INSTALL_KEY)) {
     done();
     return;
   }
 
-  installGuide.addEventListener('close', done, { once: true });
+  installSheet.addEventListener('close', done, { once: true });
   setTimeout(() => {
     localStorage.setItem(INSTALL_KEY, '1');
-    installGuide.showModal();
+    installSheet.showModal();
   }, INSTALL_DELAY_MS);
 }
 
