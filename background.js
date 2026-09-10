@@ -35,15 +35,10 @@ let url = null;
 function applyBackground(blob) {
   if (url) URL.revokeObjectURL(url);
   url = blob ? URL.createObjectURL(blob) : null;
-
-  if (url) {
-    document.documentElement.style.setProperty('--bg', `url("${url}")`);
-  } else {
-    document.documentElement.style.removeProperty('--bg');
-  }
+  renderer?.load(url || DEFAULT_IMAGE);
 }
 
-load().then(applyBackground).catch(() => {});
+load().then((blob) => blob && applyBackground(blob)).catch(() => {});
 
 // Sheet
 function openSheet() {

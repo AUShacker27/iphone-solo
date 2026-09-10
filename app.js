@@ -1,122 +1,90 @@
-const MAX_TILT = 40;
-const DEAD_ZONE = 2;
-const SHIFT = 24;
-const SMOOTHING = 0.14;
+const DEFAULT_IMAGE = 'backgrounds/default.png';
+const FOLLOW = 16;
 
-const root = document.documentElement.style;
+const canvas = document.querySelector('.stage');
 const gate = document.querySelector('.gate');
-
-const DEG = Math.PI / 180;
 
 // Standalone flag
 if (navigator.standalone || matchMedia('(display-mode: standalone)').matches) {
   document.documentElement.classList.add('is-standalone');
 }
 
-// Orientation math
-function axesOf(alpha, beta, gamma) {
-  const cX = Math.cos(beta * DEG), sX = Math.sin(beta * DEG);
-  const cY = Math.cos(gamma * DEG), sY = Math.sin(gamma * DEG);
-  const cZ = Math.cos(alpha * DEG), sZ = Math.sin(alpha * DEG);
-
-  return [
-    [cZ * cY - sZ * sX * sY, cY * sZ + cZ * sX * sY, -cX * sY],
-    [-cX * sZ, cZ * cX, sX],
-    [cY * sZ * sX + cZ * sY, sZ * sY - cZ * cY * sX, cX * cY],
-  ];
+// Renderer
+const renderer = createRenderer(canvas);
+if (!renderer) {
+  gate.querySelector('.gate__hint').textContent = 'This needs WebGL 2';
 }
 
-function dot(a, b) {
-  return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+renderer?.load(DEFAULT_IMAGE);
+
+// Gravity roll
+let target = 0;
+let display = 0;
+let unwrapped = null;
+let previous = null;
+
+function wrap(value) {
+  return ((value + 180) % 360 + 360) % 360 - 180;
 }
 
-// Tilt state
-let tilt = 0;
-let eased = 0;
-let origin = null;
-let veil = 1;
-let started = false;
+function onMotion(e) {
+  const total = e.accelerationIncludingGravity;
+  const linear = e.acceleration;
+  if (!total || !linear) return;
 
-function onOrientation(e) {
-  if (e.alpha == null || e.beta == null || e.gamma == null) return;
+  const x = total.x - linear.x;
+  const z = total.z - linear.z;
+  if (!Number.isFinite(x) || !Number.isFinite(z) || Math.hypot(x, z) < 0.5) return;
 
-  if (!origin) origin = axesOf(e.alpha, e.beta, e.gamma);
+  const roll = Math.atan2(x, -z) * 180 / Math.PI;
+  if (unwrapped === null) {
+    unwrapped = roll;
+  } else {
+    unwrapped += wrap(roll - (previous ?? wrap(unwrapped)));
+  }
+  previous = roll;
 
-  const n = axesOf(e.alpha, e.beta, e.gamma)[2];
-  const x = dot(origin[0], n);
-  const z = dot(origin[2], n);
-
-  tilt = Math.atan2(x, z) / DEG;
+  target = Math.max(-180, Math.min(180, -2 * unwrapped));
 }
+
+document.addEventListener('visibilitychange', () => {
+  previous = null;
+});
 
 // Render loop
-function smoothstep(t) {
-  t = Math.min(1, Math.max(0, t));
-  return t * t * (3 - 2 * t);
-}
+let lastTime = null;
 
-let side = 1;
+function frame(time) {
+  const dt = lastTime === null ? 1 / 60 : Math.min((time - lastTime) / 1000, 0.1);
+  lastTime = time;
 
-function frame() {
-  eased += (tilt - eased) * SMOOTHING;
-  if (started) veil *= 0.94;
+  display += (target - display) * (1 - Math.exp(-dt * FOLLOW));
+  if (Math.abs(target - display) < 0.001) display = target;
 
-  const dist = Math.abs(eased);
-  const fold = Math.max(veil, smoothstep((dist - DEAD_ZONE) / (MAX_TILT - DEAD_ZONE)));
-  if (dist > DEAD_ZONE) side = Math.sign(eased);
-
-  const shift = fold * SHIFT;
-
-  root.setProperty('--fold', fold.toFixed(3));
-  root.setProperty('--shift', `${(-side * shift).toFixed(1)}px`);
-  root.setProperty('--void-side', side > 0 ? 'to left' : 'to right');
-  root.setProperty('--void-edge', `calc(${shift.toFixed(1)}px + ${(fold * fold * 50).toFixed(1)}%)`);
-  root.setProperty('--void-soft', `calc(${shift.toFixed(1)}px + ${(fold * fold * 50 + fold * 45).toFixed(1)}%)`);
-
+  renderer?.draw(Math.min(Math.abs(display) / 180, 1), display >= 0 ? 0 : 1);
   requestAnimationFrame(frame);
 }
 
-// Gyro permission
-async function requestGyro() {
-  if (typeof DeviceOrientationEvent === 'undefined') return false;
+// Motion permission
+async function requestMotion() {
+  if (typeof DeviceMotionEvent === 'undefined') return false;
 
-  if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+  if (typeof DeviceMotionEvent.requestPermission === 'function') {
     try {
-      const state = await DeviceOrientationEvent.requestPermission();
+      const state = await DeviceMotionEvent.requestPermission();
       if (state !== 'granted') return false;
     } catch {
       return false;
     }
   }
 
-  window.addEventListener('deviceorientation', onOrientation);
+  window.addEventListener('devicemotion', onMotion);
   return true;
 }
 
-// Pointer fallback
-function onPointer(e) {
-  tilt = (e.clientX / innerWidth * 2 - 1) * MAX_TILT;
-}
-
 gate.addEventListener('click', async () => {
-  const gyro = await requestGyro();
-  setTimeout(() => {
-    if (!gyro || !origin) window.addEventListener('pointermove', onPointer);
-  }, 1000);
+  await requestMotion();
   gate.classList.add('is-hidden');
-  started = true;
 }, { once: true });
-
-// Recenter
-let lastTap = 0;
-
-document.addEventListener('pointerdown', (e) => {
-  if (e.timeStamp - lastTap < 300) origin = null;
-  lastTap = e.timeStamp;
-});
-
-document.addEventListener('visibilitychange', () => {
-  if (!document.hidden) origin = null;
-});
 
 requestAnimationFrame(frame);

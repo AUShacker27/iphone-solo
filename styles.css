@@ -1,13 +1,3 @@
-:root {
-  --bg: url("backgrounds/default.png");
-
-  --fold: 0;
-  --shift: 0px;
-  --void-side: to left;
-  --void-edge: 0px;
-  --void-soft: 0px;
-}
-
 * {
   box-sizing: border-box;
 }
@@ -27,44 +17,12 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-.screen {
+.stage {
   position: fixed;
   inset: 0;
-  overflow: hidden;
-}
-
-/* World-locked picture */
-.content {
-  position: absolute;
-  inset: 0;
-  transform: translate3d(var(--shift), 0, 0);
-  opacity: calc(1 - var(--fold) * 0.35);
-  will-change: transform, opacity;
-}
-
-.layer {
-  position: absolute;
-  inset: 0;
-  background: var(--bg) center / cover no-repeat;
-}
-
-/* Frosted glass */
-.layer--frost {
-  transform: scale(1.08);
-  filter: blur(20px) saturate(1.3) brightness(1.1);
-  opacity: var(--fold);
-  will-change: opacity;
-}
-
-/* Void */
-.void {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    var(--void-side),
-    #000 var(--void-edge),
-    transparent var(--void-soft)
-  );
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 /* Gate */
