@@ -14,8 +14,8 @@ Roll it left or right, like closing a book,
 and the display folds away from the edge you lift.
 
 On a laptop the hinge is real.
-The same fold runs along the bottom edge of the screen
-and follows the lid as you close it.
+The fold hangs from the top edge of the screen
+and grows from the bottom as the lid comes down.
 
 ## Install
 
@@ -30,30 +30,43 @@ where a Fullscreen pill explains the steps above.
 
 ## On a MacBook
 
-Browsers have no API for the lid angle,
-so a small bridge reads the sensor and hands it to the page.
+Chrome can talk to the lid angle sensor directly through WebHID,
+so nothing needs to be installed.
 
-1. Open the site in Safari or Chrome on the Mac.
-2. Download `bridge/lid-bridge.py` from the card
-   (or from this repo) and run it:
+1. Open the site in Chrome (or another Chromium browser) on the Mac.
+2. Click **Allow lid sensor** and pick the Apple device
+   in Chrome's list. It may show up as an unknown device
+   with the id `05ac:8104`.
+3. Close the lid slowly.
 
-   ```sh
-   pip3 install hidapi
-   python3 lid-bridge.py
-   ```
-
-3. The card closes on its own once the bridge connects.
-   Close the lid slowly.
-
-The bridge streams the angle on `127.0.0.1:8471/lid`
-sixty times a second.
+Chrome does not remember the grant for this sensor
+(it reports no serial number), so the sheet asks again
+each time the page is opened.
+The sensor sends its angle at least once a second;
+the easing stretches over the gap between reports
+so sparse updates still glide.
 The widest angle seen counts as flat
 and the fold completes at fifteen degrees.
-Without the bridge, scroll or the arrow keys preview the fold.
 The sensor ships in MacBooks from 2019 on.
+
+Safari and Firefox have no WebHID.
+There the sheet offers a trackpad preview
+(scroll or the arrow keys fold the picture),
+and the page also listens for the bridge below.
 The Fullscreen pill uses the real fullscreen API here,
-and a one-time card points to Safari's Add to Dock
-or Chrome's Install for a window without browser bars.
+and a one-time sheet points to Chrome's Install
+or Safari's Add to Dock for a window without browser bars.
+
+### The bridge
+
+`bridge/lid-bridge.py` reads the same sensor with `hidapi`
+and streams it on `127.0.0.1:8471/lid` sixty times a second.
+Run it with plain `python3 lid-bridge.py`:
+on first launch it creates a private virtualenv
+under `~/Library/Application Support/iPhone Solo`
+and installs `hidapi` there,
+which sidesteps Homebrew's externally-managed-environment error.
+Any browser connects to it on its own.
 
 Device detection is a fine pointer with no touch points.
 Append `?mode=laptop` or `?mode=phone` to force either.
@@ -104,11 +117,16 @@ would stretch past `MAX_STRETCH`.
 
 The two folds are separate shaders:
 `fold.js` puts the hinge on the left or right edge for phones,
-`lid.js` puts it along the bottom edge for laptops.
+`lid.js` puts it along the top edge for laptops.
 `phone.js` reads gravity from `devicemotion`,
 turns it into a roll angle, doubles it
 and clamps it to a half turn.
-`laptop.js` reads the lid angle from the bridge.
+`laptop.js` reads the lid angle from WebHID input reports,
+or from the bridge when one is running.
 Both ease toward their target every frame
 and hand `app.js` a small scene object,
-which keeps the hints, cards, controls and render loop shared.
+which keeps the hints, sheets, controls and render loop shared.
+
+The guides are `<dialog>` sheets styled in `styles.css`,
+each ending with a credit to
+[Archie Auburn](https://www.instagram.com/archieauburn/).
