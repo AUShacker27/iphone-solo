@@ -42,12 +42,19 @@ so nothing needs to be installed.
 Chrome does not remember the grant for this sensor
 (it reports no serial number), so the sheet asks again
 each time the page is opened.
-The sensor sends its angle at least once a second;
-the easing stretches over the gap between reports
-so sparse updates still glide.
-The widest angle seen counts as flat
-and the fold completes at fifteen degrees.
-The sensor ships in MacBooks from 2019 on.
+Chrome only receives the sensor's input reports,
+about once a second; the page coasts on the last velocity
+so the fold does not wait for the next tick.
+The Python bridge below polls sixty times a second
+and feels immediate if you run it.
+
+The fold maps lid degrees to turn 0–1.
+`FOLD_OPEN` and `FOLD_CLOSED` in `laptop.js` set that span.
+Leave `FOLD_OPEN` at `0` to use the widest angle seen
+(a fully open lid). Raise it, e.g. `110`, to start folding
+only after the lid has already come down that far.
+`FOLD_CLOSED` is where the picture is fully gone
+(default `15`). The sensor ships in MacBooks from 2019 on.
 
 Safari and Firefox have no WebHID,
 so the sheet asks you to copy the page link into Google Chrome.

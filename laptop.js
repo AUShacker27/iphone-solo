@@ -1,7 +1,14 @@
 const BRIDGE_URL = 'http://127.0.0.1:8471/lid';
-const CLOSED_ANGLE = 15;
 const WHEEL_STEP = 1 / 1200;
 const KEY_STEP = 0.05;
+
+// Fold range
+const FOLD_OPEN = 0;
+const FOLD_CLOSED = 15;
+const LID_FOLLOW = 32;
+const COAST_S = 0.28;
+const POLL_MS = 8;
+
 const LID_VENDOR = 0x05AC;
 const LID_PRODUCT = 0x8104;
 const LID_USAGE_PAGE = 0x20;
@@ -12,7 +19,6 @@ const LID_FILTERS = [
   { vendorId: LID_VENDOR, usagePage: LID_USAGE_PAGE, usage: LID_USAGE },
 ];
 const ANGLE_REPORT = 1;
-const SLOW_FOLLOW = 3;
 
 // Laptop: the lid angle drives the lid fold
 function createLaptopScene(canvas) {
@@ -26,11 +32,14 @@ function createLaptopScene(canvas) {
 
   let target = 0;
   let display = 0;
-  let follow = FOLLOW;
-  let open = null;
+  let open = FOLD_OPEN || null;
   let live = false;
-  let lastReport = 0;
   let hidDevice = null;
+  let lastAngle = null;
+  let lastSample = 0;
+  let velocity = 0;
+  let coasting = false;
+  let pollTimer = 0;
 
   document.documentElement.classList.add(hid ? 'has-hid' : 'no-hid');
 
@@ -54,10 +63,26 @@ function createLaptopScene(canvas) {
     onboard(() => showHint(gesture));
   }
 
-  function onAngle(angle) {
+  function foldOf(angle) {
+    const top = FOLD_OPEN || open;
+    if (!Number.isFinite(top) || top <= FOLD_CLOSED) return 0;
+    return clamp((top - angle) / (top - FOLD_CLOSED));
+  }
+
+  function onAngle(angle, fromHid) {
     if (!Number.isFinite(angle)) return;
-    if (open === null || angle > open) open = angle;
-    target = clamp((open - angle) / (open - CLOSED_ANGLE));
+    const now = performance.now();
+    if (fromHid && lastAngle != null && lastSample) {
+      const dt = (now - lastSample) / 1000;
+      if (dt > 0.001) velocity = (angle - lastAngle) / dt;
+    } else {
+      velocity = 0;
+    }
+    lastAngle = angle;
+    lastSample = now;
+    coasting = Boolean(fromHid);
+    if (!FOLD_OPEN && (open === null || angle > open)) open = angle;
+    target = foldOf(angle);
   }
 
   // Sensor
@@ -78,23 +103,37 @@ function createLaptopScene(canvas) {
 
   function onReport(e) {
     if (e.reportId !== ANGLE_REPORT && e.reportId !== 0) return;
-    const angle = parseAngle(e.data);
-    if (!Number.isFinite(angle)) return;
-    const now = performance.now();
-    const gap = Math.min(1, (now - lastReport) / 1000);
-    lastReport = now;
-    follow = Math.min(FOLLOW, Math.max(SLOW_FOLLOW, 4 / gap));
-    onAngle(angle);
+    onAngle(parseAngle(e.data), true);
+  }
+
+  function stopPoll() {
+    clearTimeout(pollTimer);
+    pollTimer = 0;
+  }
+
+  async function pollFeature() {
+    if (!hidDevice?.opened) return;
+    try {
+      onAngle(parseAngle(await hidDevice.receiveFeatureReport(ANGLE_REPORT)), true);
+    } catch {
+      stopPoll();
+      return;
+    }
+    pollTimer = setTimeout(pollFeature, POLL_MS);
   }
 
   async function listen(device) {
     if (hidDevice && hidDevice !== device) {
+      stopPoll();
       try { hidDevice.removeEventListener('inputreport', onReport); } catch { /* already gone */ }
       try { await hidDevice.close(); } catch { /* already closed */ }
     }
     if (!device.opened) await device.open();
     hidDevice = device;
     device.addEventListener('inputreport', onReport);
+    try { await device.sendReport(6, Uint8Array.of(1)); } catch { /* no output */ }
+    stopPoll();
+    pollFeature();
     begin('Close the lid slowly to fold the picture.');
   }
 
@@ -142,21 +181,18 @@ function createLaptopScene(canvas) {
   // Bridge
   function connectBridge() {
     const source = new EventSource(BRIDGE_URL);
-    source.onmessage = (e) => onAngle(Number(e.data));
-    source.onopen = () => {
-      follow = FOLLOW;
-      begin('Close the lid slowly to fold the picture.');
-    };
+    source.onmessage = (e) => onAngle(Number(e.data), false);
+    source.onopen = () => begin('Close the lid slowly to fold the picture.');
   }
 
   // Preview
   window.addEventListener('wheel', (e) => {
-    follow = FOLLOW;
+    coasting = false;
     target = clamp(target + e.deltaY * WHEEL_STEP);
   }, { passive: true });
 
   window.addEventListener('keydown', (e) => {
-    follow = FOLLOW;
+    coasting = false;
     if (e.key === 'ArrowDown') target = clamp(target + KEY_STEP);
     if (e.key === 'ArrowUp') target = clamp(target - KEY_STEP);
   });
@@ -186,7 +222,11 @@ function createLaptopScene(canvas) {
       if (!live) lidSheet.showModal();
     },
     frame(dt) {
-      display += (target - display) * (1 - Math.exp(-dt * follow));
+      if (coasting && lastAngle != null) {
+        const age = (performance.now() - lastSample) / 1000;
+        target = foldOf(lastAngle + velocity * Math.min(age, COAST_S));
+      }
+      display += (target - display) * (1 - Math.exp(-dt * LID_FOLLOW));
       if (Math.abs(target - display) < 0.0001) display = target;
       renderer.draw(display);
     },
