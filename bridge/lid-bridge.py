@@ -4,19 +4,41 @@
 Reads Apple's lid angle sensor over HID
 and serves it as text/event-stream on 127.0.0.1:8471/lid.
 
-    pip3 install hidapi
     python3 lid-bridge.py
+
+The first run creates a private virtualenv
+under ~/Library/Application Support/iPhone Solo
+and installs hidapi into it,
+so no system-wide pip install is needed.
 """
 
+import os
+import subprocess
 import sys
 import threading
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
+VENV = os.path.expanduser('~/Library/Application Support/iPhone Solo/venv')
+PYTHON = os.path.join(VENV, 'bin', 'python3')
+
+
+# Dependency
+def bootstrap():
+    if not os.path.exists(PYTHON):
+        print('Setting up a private Python environment…', flush=True)
+        subprocess.check_call([sys.executable, '-m', 'venv', VENV])
+    print('Installing hidapi…', flush=True)
+    subprocess.check_call([PYTHON, '-m', 'pip', 'install', '--quiet', '--disable-pip-version-check', 'hidapi'])
+    os.execv(PYTHON, [PYTHON, *sys.argv])
+
+
 try:
     import hid
 except ImportError:
-    sys.exit('hidapi is missing. Run: pip3 install hidapi')
+    if sys.executable == PYTHON:
+        sys.exit('hidapi failed to install. Delete the venv and try again:\n  rm -r "%s"' % VENV)
+    bootstrap()
 
 PORT = 8471
 VENDOR = 0x05AC
@@ -80,7 +102,7 @@ class Handler(BaseHTTPRequestHandler):
         pass
 
 
-print(f'Lid at {read_angle()}°. Streaming on http://127.0.0.1:{PORT}/lid — press Ctrl+C to stop.')
+print(f'Lid at {read_angle()}°. Streaming on http://127.0.0.1:{PORT}/lid — press Ctrl+C to stop.', flush=True)
 try:
     ThreadingHTTPServer(('127.0.0.1', PORT), Handler).serve_forever()
 except KeyboardInterrupt:
