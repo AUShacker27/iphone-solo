@@ -108,7 +108,9 @@ function onPointer(e) {
 
 gate.addEventListener('click', async () => {
   const gyro = await requestGyro();
-  if (!gyro) window.addEventListener('pointermove', onPointer);
+  setTimeout(() => {
+    if (!gyro || !origin) window.addEventListener('pointermove', onPointer);
+  }, 1000);
   gate.classList.add('is-hidden');
   started = true;
 }, { once: true });
