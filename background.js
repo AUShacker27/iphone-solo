@@ -1,10 +1,9 @@
 const DB_NAME = 'solo';
 const STORE = 'settings';
 const KEY = 'background';
-const HOLD_MS = 600;
 
-const sheet = document.querySelector('.sheet');
 const picker = document.querySelector('.picker');
+const reset = document.querySelector('[data-action="reset"]');
 
 // Storage
 function openDb() {
@@ -36,31 +35,16 @@ function applyBackground(blob) {
   if (url) URL.revokeObjectURL(url);
   url = blob ? URL.createObjectURL(blob) : null;
   renderer?.load(url || DEFAULT_IMAGE);
+  reset.hidden = !blob;
 }
 
-load().then((blob) => blob && applyBackground(blob)).catch(() => {});
+load().then((blob) => {
+  if (!blob) return;
+  applyBackground(blob);
+  actions.classList.add('is-hidden');
+}).catch(() => {});
 
-// Sheet
-function openSheet() {
-  sheet.hidden = false;
-}
-
-function closeSheet() {
-  sheet.hidden = true;
-}
-
-sheet.addEventListener('click', async (e) => {
-  const action = e.target.dataset.action;
-  if (!action) return;
-
-  if (action === 'pick') picker.click();
-  if (action === 'reset') {
-    await clear();
-    applyBackground(null);
-  }
-  closeSheet();
-});
-
+// Controls
 picker.addEventListener('change', async () => {
   const [file] = picker.files;
   if (!file) return;
@@ -70,20 +54,7 @@ picker.addEventListener('change', async () => {
   picker.value = '';
 });
 
-// Long press
-let hold = null;
-let start = null;
-
-document.addEventListener('pointerdown', (e) => {
-  if (sheet.contains(e.target)) return;
-  start = { x: e.clientX, y: e.clientY };
-  hold = setTimeout(openSheet, HOLD_MS);
+reset.addEventListener('click', async () => {
+  await clear();
+  applyBackground(null);
 });
-
-document.addEventListener('pointermove', (e) => {
-  if (start && Math.hypot(e.clientX - start.x, e.clientY - start.y) > 10) clearTimeout(hold);
-});
-
-for (const type of ['pointerup', 'pointercancel']) {
-  document.addEventListener(type, () => clearTimeout(hold));
-}

@@ -17,26 +17,54 @@
 <body>
   <canvas class="stage"></canvas>
 
-  <button class="gate" type="button">
-    <span class="gate__title">iPhone Solo</span>
-    <span class="gate__hint">Tap to unfold</span>
-  </button>
-
-  <div class="sheet" hidden>
-    <div class="sheet__group">
-      <button class="sheet__item" type="button" data-action="pick">Choose Photo</button>
-      <button class="sheet__item" type="button" data-action="reset">Use Default</button>
+  <div class="chrome">
+    <div class="actions">
+      <label class="pill">
+        Choose image
+        <input class="picker" type="file" accept="image/*">
+      </label>
+      <button class="pill" type="button" data-action="reset" hidden>Use default</button>
+      <button class="pill pill--browser" type="button" data-action="fullscreen">Fullscreen</button>
+      <a class="pill pill--browser" href="https://github.com/soloiaros/iphone-solo">GitHub</a>
     </div>
-    <div class="sheet__group">
-      <button class="sheet__item sheet__item--cancel" type="button" data-action="close">Cancel</button>
-    </div>
+    <p class="hint" role="status" hidden></p>
   </div>
-  <input class="picker" type="file" accept="image/*" hidden>
 
-  <footer class="about">
-    <span>Add to Home Screen for the full effect</span>
-    <a href="https://github.com/soloiaros/iphone-solo">Source on GitHub</a>
-  </footer>
+  <section class="unavailable" hidden>
+    <div class="unavailable__body">
+      <h1>Open on your phone</h1>
+      <p>
+        iPhone Solo needs live gravity readings.
+        Open this page in Safari on your iPhone, allow motion access,
+        then face the screen toward the sky.
+      </p>
+      <p class="unavailable__status" role="status" hidden></p>
+      <button class="pill" type="button" data-action="retry" hidden>Enable motion</button>
+      <a class="unavailable__link" href="https://github.com/soloiaros/iphone-solo">Source on GitHub</a>
+    </div>
+  </section>
+
+  <dialog class="card card--motion">
+    <h2>Enable motion</h2>
+    <p>
+      Allow motion access, then hold the phone flat
+      and roll it left or right, like closing a book.
+    </p>
+    <button class="card__button" type="button" data-action="enable" autofocus>Enable motion</button>
+  </dialog>
+
+  <dialog class="card card--install">
+    <h2>More room to unfold</h2>
+    <p>Add Solo to your Home Screen to open it without Safari’s bars.</p>
+    <ol class="steps">
+      <li>Tap Share in Safari.</li>
+      <li>Choose Add to Home Screen.</li>
+      <li>Tap Add, then open Solo from the icon.</li>
+    </ol>
+    <form method="dialog">
+      <button class="card__button" type="submit">Got it</button>
+    </form>
+  </dialog>
 
   <script src="render.js"></script>
   <script src="app.js"></script>
