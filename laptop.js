@@ -4,7 +4,7 @@ const KEY_STEP = 0.05;
 
 // Fold range
 const FOLD_OPEN = 0;
-const FOLD_CLOSED = 15;
+const FOLD_CLOSED = 30;
 const LID_FOLLOW = 32;
 const COAST_S = 0.28;
 const POLL_MS = 8;
