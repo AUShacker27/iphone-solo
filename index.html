@@ -91,17 +91,25 @@
       </svg>
     </div>
     <h2>Read the Lid</h2>
-    <p>
+    <p class="hid-only">
       Solo folds the picture as you close your MacBook.
-      The hinge angle comes from a small bridge running on your Mac.
+      Chrome reads the hinge angle straight from the lid sensor
+      and nothing leaves your Mac.
     </p>
-    <ol class="steps">
-      <li>Download <a class="card__link" href="bridge/lid-bridge.py" download>lid-bridge.py</a>.</li>
-      <li>In Terminal: <code>pip3 install hidapi &amp;&amp; python3 ~/Downloads/lid-bridge.py</code></li>
+    <p class="no-hid-only">
+      Solo folds the picture as you close your MacBook,
+      but this browser cannot talk to the lid sensor.
+      Open the page in Chrome for the real hinge,
+      or preview the fold with the trackpad.
+    </p>
+    <ol class="steps hid-only">
+      <li>Click Allow lid sensor.</li>
+      <li>Pick the Apple device in Chrome’s list and connect.</li>
       <li>Close the lid slowly.</li>
     </ol>
-    <p class="card__status" role="status">Waiting for the bridge…</p>
-    <button class="card__button card__button--quiet" type="button" data-action="preview">Preview with scroll instead</button>
+    <p class="card__status" role="status" hidden></p>
+    <button class="card__button hid-only" type="button" data-action="allow" autofocus>Allow lid sensor</button>
+    <button class="card__button card__button--quiet" type="button" data-action="preview">Preview with trackpad</button>
   </dialog>
 
   <dialog class="card card--dock glass">

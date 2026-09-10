@@ -350,6 +350,16 @@ body {
   font-size: 14px;
 }
 
+.card p.card__status[hidden],
+.has-hid .no-hid-only,
+.no-hid .hid-only {
+  display: none;
+}
+
+.card__button + .card__button {
+  margin-top: 10px;
+}
+
 .steps {
   display: grid;
   gap: 12px;
