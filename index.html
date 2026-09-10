@@ -45,52 +45,39 @@
     </div>
   </section>
 
-  <dialog class="card card--motion glass">
-    <div class="card__icon glass">
-      <svg viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <rect x="11" y="5" width="14" height="26" rx="3.5" transform="rotate(-12 18 18)"/>
-        <path d="M6 13a14 14 0 0 0-1 11m0 0-3-3m3 3 3-3M30 23a14 14 0 0 0 1-11m0 0-3 3m3-3 3 3"/>
-      </svg>
-    </div>
-    <h2>Allow Motion</h2>
+  <dialog class="sheet sheet--motion glass">
+    <p class="sheet__eyebrow">Solo · Step 1 of 2</p>
+    <h2>Roll to fold</h2>
     <p>
       Solo folds the picture as you roll your iPhone.
-      It uses the motion sensors and nothing leaves your device.
+      It reads the motion sensors and nothing leaves your device.
     </p>
-    <button class="card__button" type="button" data-action="enable" autofocus>Continue</button>
+    <div class="sheet__row">
+      <button class="sheet__cta" type="button" data-action="enable" autofocus>Allow motion</button>
+    </div>
   </dialog>
 
-  <dialog class="card card--install glass">
-    <div class="card__icon glass">
-      <svg viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M12 13H9a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V15a2 2 0 0 0-2-2h-3"/>
-        <path d="M18 4v18M12.5 9.5 18 4l5.5 5.5"/>
-      </svg>
-    </div>
-    <h2>Add to Home Screen</h2>
+  <dialog class="sheet sheet--install glass">
+    <p class="sheet__eyebrow">Solo · Step 2 of 2</p>
+    <h2>Keep it on your Home Screen</h2>
     <p>
       Solo is made to run as an app.
-      From the Home Screen it opens full screen,
-      without Safari’s bars, and keeps your photo.
+      From the Home Screen it opens edge to edge,
+      without Safari’s bars, and remembers your photo.
     </p>
-    <ol class="steps">
+    <ol class="tiles">
       <li>Tap Share in Safari.</li>
       <li>Choose Add to Home Screen.</li>
-      <li>Tap Add and open Solo from the icon.</li>
+      <li>Tap Add, then open Solo from the icon.</li>
     </ol>
-    <form method="dialog">
-      <button class="card__button" type="submit">Got It</button>
+    <form class="sheet__row" method="dialog">
+      <button class="sheet__cta" type="submit">Got it</button>
     </form>
   </dialog>
 
-  <dialog class="card card--lid glass">
-    <div class="card__icon glass">
-      <svg viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M6 24h24M8 24l3-13a2 2 0 0 1 2-1.5h10a2 2 0 0 1 2 1.5l3 13"/>
-        <path d="M4 27a2 2 0 0 0 2 2h24a2 2 0 0 0 2-2v-3H4z"/>
-      </svg>
-    </div>
-    <h2>Read the Lid</h2>
+  <dialog class="sheet sheet--lid glass">
+    <p class="sheet__eyebrow">Solo · Step 1 of 2</p>
+    <h2>Close the lid to fold</h2>
     <p class="hid-only">
       Solo folds the picture as you close your MacBook.
       Chrome reads the hinge angle straight from the lid sensor
@@ -102,31 +89,32 @@
       Open the page in Chrome for the real hinge,
       or preview the fold with the trackpad.
     </p>
-    <ol class="steps hid-only">
+    <ol class="tiles hid-only">
       <li>Click Allow lid sensor.</li>
       <li>Pick the Apple device in Chrome’s list and connect.</li>
       <li>Close the lid slowly.</li>
     </ol>
-    <p class="card__status" role="status" hidden></p>
-    <button class="card__button hid-only" type="button" data-action="allow" autofocus>Allow lid sensor</button>
-    <button class="card__button card__button--quiet" type="button" data-action="preview">Preview with trackpad</button>
+    <p class="sheet__status" role="status" hidden></p>
+    <div class="sheet__row">
+      <button class="sheet__cta hid-only" type="button" data-action="allow" autofocus>Allow lid sensor</button>
+      <button class="sheet__cta sheet__cta--quiet" type="button" data-action="preview">Preview with trackpad</button>
+    </div>
   </dialog>
 
-  <dialog class="card card--dock glass">
-    <div class="card__icon glass">
-      <svg viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <rect x="4" y="7" width="28" height="18" rx="3"/>
-        <path d="M9 30h18M14 16l4 4 4-4M18 20v-9"/>
-      </svg>
-    </div>
-    <h2>Add to Dock</h2>
+  <dialog class="sheet sheet--dock glass">
+    <p class="sheet__eyebrow">Solo · Step 2 of 2</p>
+    <h2>Give it a window of its own</h2>
     <p>
-      Solo opens in its own window, without browser bars.
-      In Safari choose File → Add to Dock.
-      In Chrome use Install from the address bar.
+      Solo looks best without browser bars.
+      Install it and it opens like any other app on your Mac.
     </p>
-    <form method="dialog">
-      <button class="card__button" type="submit">Got It</button>
+    <ol class="tiles">
+      <li>In Chrome, click Install in the address bar.</li>
+      <li>In Safari, choose File → Add to Dock.</li>
+      <li>Open Solo from the Dock and go fullscreen.</li>
+    </ol>
+    <form class="sheet__row" method="dialog">
+      <button class="sheet__cta" type="submit">Got it</button>
     </form>
   </dialog>
 

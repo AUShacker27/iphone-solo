@@ -8,10 +8,10 @@ const SLOW_FOLLOW = 3;
 
 // Laptop: the lid angle drives the lid fold
 function createLaptopScene(canvas) {
-  const lidCard = document.querySelector('.card--lid');
-  const lidStatus = lidCard.querySelector('.card__status');
-  const allow = lidCard.querySelector('[data-action="allow"]');
-  const preview = lidCard.querySelector('[data-action="preview"]');
+  const lidSheet = document.querySelector('.sheet--lid');
+  const lidStatus = lidSheet.querySelector('.sheet__status');
+  const allow = lidSheet.querySelector('[data-action="allow"]');
+  const preview = lidSheet.querySelector('[data-action="preview"]');
   const renderer = createLid(canvas);
   const hid = navigator.hid;
 
@@ -34,7 +34,7 @@ function createLaptopScene(canvas) {
   }
 
   function begin(gesture) {
-    if (lidCard.open) lidCard.close();
+    if (lidSheet.open) lidSheet.close();
     if (live) {
       showHint(gesture);
       return;
@@ -123,7 +123,7 @@ function createLaptopScene(canvas) {
     begin('Scroll or use the arrow keys to fold the picture.');
   });
 
-  lidCard.addEventListener('cancel', (e) => e.preventDefault());
+  lidSheet.addEventListener('cancel', (e) => e.preventDefault());
 
   return {
     defaultImage: 'backgrounds/default-mac.png',
@@ -133,7 +133,7 @@ function createLaptopScene(canvas) {
     async start() {
       connectBridge();
       await reconnect();
-      if (!live) lidCard.showModal();
+      if (!live) lidSheet.showModal();
     },
     frame(dt) {
       display += (target - display) * (1 - Math.exp(-dt * follow));

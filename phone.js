@@ -2,8 +2,8 @@ const SENSOR_WAIT_MS = 4000;
 
 // Phone: gravity roll drives the book fold
 function createPhoneScene(canvas) {
-  const motionCard = document.querySelector('.card--motion');
-  const enable = motionCard.querySelector('[data-action="enable"]');
+  const motionSheet = document.querySelector('.sheet--motion');
+  const enable = motionSheet.querySelector('[data-action="enable"]');
   const renderer = createFold(canvas);
 
   let target = 0;
@@ -74,7 +74,7 @@ function createPhoneScene(canvas) {
       }
 
       motionEnabled = true;
-      if (motionCard.open) motionCard.close();
+      if (motionSheet.open) motionSheet.close();
       window.addEventListener('devicemotion', onMotion);
       onboard(showGesture);
       sensorTimer = setTimeout(() => {
@@ -83,8 +83,8 @@ function createPhoneScene(canvas) {
     } catch {
       if (fromTap) {
         showUnavailable('Motion access failed. Tap Enable motion to try again.', enableMotion);
-      } else if (!motionCard.open) {
-        motionCard.showModal();
+      } else if (!motionSheet.open) {
+        motionSheet.showModal();
       }
     } finally {
       pending = false;
@@ -93,7 +93,7 @@ function createPhoneScene(canvas) {
   }
 
   enable.addEventListener('click', () => enableMotion(true));
-  motionCard.addEventListener('cancel', (e) => e.preventDefault());
+  motionSheet.addEventListener('cancel', (e) => e.preventDefault());
 
   return {
     defaultImage: 'backgrounds/default.png',

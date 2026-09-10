@@ -9,8 +9,8 @@ const hint = document.querySelector('.hint');
 const unavailable = document.querySelector('.unavailable');
 const status = unavailable.querySelector('.unavailable__status');
 const retry = unavailable.querySelector('[data-action="retry"]');
-const installCard = document.querySelector('.card--install');
-const dockCard = document.querySelector('.card--dock');
+const installSheet = document.querySelector('.sheet--install');
+const dockSheet = document.querySelector('.sheet--dock');
 const fullscreen = document.querySelector('[data-action="fullscreen"]');
 
 // Device
@@ -39,7 +39,7 @@ function showHint(text, ms = HINT_MS) {
 
 // Unavailable
 function showUnavailable(message = '', onRetry = null) {
-  document.querySelectorAll('.card[open]').forEach((card) => card.close());
+  document.querySelectorAll('.sheet[open]').forEach((sheet) => sheet.close());
   unavailable.hidden = false;
   status.textContent = message;
   status.hidden = !message;
@@ -52,7 +52,7 @@ function hideUnavailable() {
 }
 
 // Install guide
-const installGuide = laptop ? dockCard : installCard;
+const installGuide = laptop ? dockSheet : installSheet;
 
 function onboard(done) {
   if (launchedAsApp || localStorage.getItem(INSTALL_KEY)) {
@@ -75,7 +75,7 @@ fullscreen.addEventListener('click', async () => {
   } else if (document.fullscreenEnabled) {
     await document.documentElement.requestFullscreen();
   } else {
-    installCard.showModal();
+    installSheet.showModal();
   }
 });
 
