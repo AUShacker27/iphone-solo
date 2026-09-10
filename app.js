@@ -2,6 +2,7 @@ const DEFAULT_IMAGE = 'backgrounds/default.png';
 const FOLLOW = 16;
 const HINT_MS = 7000;
 const SENSOR_WAIT_MS = 4000;
+const INSTALL_DELAY_MS = 1200;
 const INSTALL_KEY = 'install-shown';
 
 const canvas = document.querySelector('.stage');
@@ -74,7 +75,6 @@ function onMotion(e) {
     hasGravity = true;
     clearTimeout(sensorTimer);
     unavailable.hidden = true;
-    offerInstall();
   }
 
   const roll = Math.atan2(x, -z) * 180 / Math.PI;
@@ -133,7 +133,7 @@ async function enableMotion(fromTap = false) {
     motionEnabled = true;
     if (motionCard.open) motionCard.close();
     window.addEventListener('devicemotion', onMotion);
-    showHint('Face the screen toward the sky, then roll the phone left or right.');
+    if (!offerInstall()) showGesture();
     sensorTimer = setTimeout(() => {
       if (!hasGravity) showUnavailable();
     }, SENSOR_WAIT_MS);
@@ -155,13 +155,23 @@ retry.addEventListener('click', () => enableMotion(true));
 motionCard.addEventListener('cancel', (e) => e.preventDefault());
 
 // Install guide
+function showGesture() {
+  showHint('Face the screen toward the sky, then roll the phone left or right.');
+}
+
 function offerInstall() {
-  if (launchedAsApp || localStorage.getItem(INSTALL_KEY)) return;
+  if (launchedAsApp || localStorage.getItem(INSTALL_KEY)) return false;
+
   setTimeout(() => {
     localStorage.setItem(INSTALL_KEY, '1');
     installCard.showModal();
-  }, HINT_MS + 1000);
+  }, INSTALL_DELAY_MS);
+  return true;
 }
+
+installCard.addEventListener('close', showGesture);
+
+if (!document.fullscreenEnabled) fullscreen.textContent = 'Add to Home Screen';
 
 fullscreen.addEventListener('click', async () => {
   if (document.fullscreenElement) {
