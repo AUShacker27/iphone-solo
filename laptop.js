@@ -124,7 +124,7 @@ function createLaptopScene(canvas) {
     pollTimer = setTimeout(pollFeature, POLL_MS);
   }
 
-  async function listen(device) {
+  async function listen(device, announce) {
     if (hidDevice && hidDevice !== device) {
       stopPoll();
       try { hidDevice.removeEventListener('inputreport', onReport); } catch { /* already gone */ }
@@ -136,7 +136,7 @@ function createLaptopScene(canvas) {
     try { await device.sendReport(6, Uint8Array.of(1)); } catch { /* no output */ }
     stopPoll();
     pollFeature();
-    begin('Close the lid slowly to fold the picture.');
+    if (announce) begin('Close the lid slowly to fold the picture.');
   }
 
   async function pickSensor(candidates) {
@@ -149,7 +149,7 @@ function createLaptopScene(canvas) {
     if (!hid) return false;
     const device = await pickSensor(await hid.getDevices());
     if (!device) return false;
-    await listen(device);
+    await listen(device, false);
     return true;
   }
 
@@ -163,7 +163,7 @@ function createLaptopScene(canvas) {
         setStatus('No lid sensor was selected. It ships in MacBooks from 2019 on.');
         return;
       }
-      await listen(device);
+      await listen(device, true);
     } catch (error) {
       setStatus(error.message || 'The lid sensor could not be opened.');
     } finally {
@@ -180,19 +180,23 @@ function createLaptopScene(canvas) {
     streamSource = source;
     streamLive = true;
     coasting = false;
-    source.onmessage = (e) => {
-      streamLive = true;
-      onAngle(Number(e.data), false);
-    };
-    source.onerror = () => { streamLive = false; };
     setStatus('Lid stream connected.');
     begin('Close the lid slowly to fold the picture.');
   }
 
+  function onStreamMessage(source, e) {
+    const angle = Number(e.data);
+    if (!Number.isFinite(angle)) return;
+    if (streamSource !== source) attachStream(source);
+    streamLive = true;
+    onAngle(angle, false);
+  }
+
   function connectStream(url, persist) {
     const source = new EventSource(url);
-    source.onopen = () => attachStream(source);
+    source.onmessage = (e) => onStreamMessage(source, e);
     source.onerror = () => {
+      if (streamSource === source) streamLive = false;
       if (!persist && source.readyState !== EventSource.OPEN) source.close();
     };
   }
@@ -217,7 +221,7 @@ function createLaptopScene(canvas) {
 
   if (hid) {
     hid.addEventListener('connect', (e) => {
-      if (isLidSensor(e.device)) listen(e.device);
+      if (isLidSensor(e.device)) listen(e.device, false);
     });
   }
 
@@ -234,9 +238,9 @@ function createLaptopScene(canvas) {
     renderer,
     live: () => live,
     async start() {
+      lidSheet.showModal();
       connectStreams();
       await reconnect();
-      if (!live) lidSheet.showModal();
     },
     frame(dt) {
       if (coasting && lastAngle != null) {
