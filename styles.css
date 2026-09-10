@@ -2,11 +2,10 @@
   --bg: url("backgrounds/default.png");
 
   --fold: 0;
-  --shift-x: 0px;
-  --shift-y: 0px;
-  --void-angle: 270deg;
-  --void-edge: -40%;
-  --void-soft: 0%;
+  --shift: 0px;
+  --void-side: to left;
+  --void-edge: 0px;
+  --void-soft: 0px;
 }
 
 * {
@@ -38,10 +37,8 @@ body {
 .content {
   position: absolute;
   inset: 0;
-  transform:
-    translate3d(var(--shift-x), var(--shift-y), 0)
-    scale(calc(1.08 - var(--fold) * 0.05));
-  opacity: calc(1 - var(--fold) * 0.45);
+  transform: translate3d(var(--shift), 0, 0);
+  opacity: calc(1 - var(--fold) * 0.35);
   will-change: transform, opacity;
 }
 
@@ -53,8 +50,8 @@ body {
 
 /* Frosted glass */
 .layer--frost {
-  transform: scale(1.12);
-  filter: blur(28px) saturate(1.5) brightness(1.25);
+  transform: scale(1.08);
+  filter: blur(20px) saturate(1.3) brightness(1.1);
   opacity: var(--fold);
   will-change: opacity;
 }
@@ -64,7 +61,7 @@ body {
   position: absolute;
   inset: 0;
   background: linear-gradient(
-    var(--void-angle),
+    var(--void-side),
     #000 var(--void-edge),
     transparent var(--void-soft)
   );

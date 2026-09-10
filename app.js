@@ -1,6 +1,6 @@
 const MAX_TILT = 40;
 const DEAD_ZONE = 2;
-const SHIFT = 28;
+const SHIFT = 24;
 const SMOOTHING = 0.14;
 
 const root = document.documentElement.style;
@@ -31,8 +31,8 @@ function dot(a, b) {
 }
 
 // Tilt state
-const tilt = { x: 0, y: 0 };
-const eased = { x: 0, y: 0 };
+let tilt = 0;
+let eased = 0;
 let origin = null;
 let veil = 1;
 let started = false;
@@ -44,14 +44,9 @@ function onOrientation(e) {
 
   const n = axesOf(e.alpha, e.beta, e.gamma)[2];
   const x = dot(origin[0], n);
-  const y = dot(origin[1], n);
   const z = dot(origin[2], n);
 
-  const angle = Math.atan2(Math.hypot(x, y), z) / DEG;
-  const len = Math.hypot(x, y) || 1;
-
-  tilt.x = (x / len) * angle;
-  tilt.y = (-y / len) * angle;
+  tilt = Math.atan2(x, z) / DEG;
 }
 
 // Render loop
@@ -60,23 +55,23 @@ function smoothstep(t) {
   return t * t * (3 - 2 * t);
 }
 
-let angle = 270;
+let side = 1;
 
 function frame() {
-  eased.x += (tilt.x - eased.x) * SMOOTHING;
-  eased.y += (tilt.y - eased.y) * SMOOTHING;
+  eased += (tilt - eased) * SMOOTHING;
   if (started) veil *= 0.94;
 
-  const dist = Math.hypot(eased.x, eased.y);
+  const dist = Math.abs(eased);
   const fold = Math.max(veil, smoothstep((dist - DEAD_ZONE) / (MAX_TILT - DEAD_ZONE)));
-  if (dist > DEAD_ZONE) angle = Math.atan2(-eased.x, eased.y) / DEG;
+  if (dist > DEAD_ZONE) side = Math.sign(eased);
+
+  const shift = fold * SHIFT;
 
   root.setProperty('--fold', fold.toFixed(3));
-  root.setProperty('--shift-x', `${(-eased.x / MAX_TILT * SHIFT).toFixed(1)}px`);
-  root.setProperty('--shift-y', `${(-eased.y / MAX_TILT * SHIFT).toFixed(1)}px`);
-  root.setProperty('--void-angle', `${angle.toFixed(1)}deg`);
-  root.setProperty('--void-edge', `${(fold * 90 - 40).toFixed(1)}%`);
-  root.setProperty('--void-soft', `${(fold * 90).toFixed(1)}%`);
+  root.setProperty('--shift', `${(-side * shift).toFixed(1)}px`);
+  root.setProperty('--void-side', side > 0 ? 'to left' : 'to right');
+  root.setProperty('--void-edge', `calc(${shift.toFixed(1)}px + ${(fold * fold * 50).toFixed(1)}%)`);
+  root.setProperty('--void-soft', `calc(${shift.toFixed(1)}px + ${(fold * fold * 50 + fold * 45).toFixed(1)}%)`);
 
   requestAnimationFrame(frame);
 }
@@ -100,10 +95,7 @@ async function requestGyro() {
 
 // Pointer fallback
 function onPointer(e) {
-  const nx = e.clientX / innerWidth * 2 - 1;
-  const ny = e.clientY / innerHeight * 2 - 1;
-  tilt.x = nx * MAX_TILT;
-  tilt.y = ny * MAX_TILT;
+  tilt = (e.clientX / innerWidth * 2 - 1) * MAX_TILT;
 }
 
 gate.addEventListener('click', async () => {

@@ -9,9 +9,12 @@ the image frosts over and slips into black
 without ever changing its size.
 iPhone Solo does the same thing on a regular iPhone,
 driven by the gyroscope instead of a hinge.
-Hold the phone still and the picture is sharp.
-Tilt it and the picture stays put, frosts over
-and disappears into the void from the receding edge.
+Hold the phone still and the picture is sharp, edge to edge.
+Turn it left or right, as if around a hinge,
+and the picture stays put, frosts over
+and disappears into the void from the receding side.
+Pitching the phone forward or back does nothing,
+just like a hinge only moves one way.
 
 ## Install
 
@@ -49,9 +52,9 @@ and used until you choose *Use Default*.
 
 The feel is controlled by a few constants at the top of `app.js`:
 
-- `MAX_TILT` — degrees of tilt for a full fold
+- `MAX_TILT` — degrees of turn for a full fold
 - `DEAD_ZONE` — degrees ignored around the neutral pose
-- `SHIFT` — how far the picture counter-moves at full tilt, in pixels
+- `SHIFT` — how far the picture slides sideways at full fold, in pixels
 - `SMOOTHING` — how quickly the effect follows the sensor
 
 The look itself is in `styles.css`,
