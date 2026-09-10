@@ -1,4 +1,4 @@
-// Lid fold: hinge along the bottom edge
+// Lid fold: hinge along the top edge
 const LID = `
 void main() {
   float turn = clamp(u_turn, 0.0, 1.0);
@@ -8,7 +8,7 @@ void main() {
   }
 
   // Hinge projection
-  float fromHinge = v_uv.y;
+  float fromHinge = 1.0 - v_uv.y;
   float tilt = turn * HALF_PI;
   float bend = min(tilt, MAX_TILT);
   float cosine = cos(bend);
@@ -18,7 +18,7 @@ void main() {
   float depth = fromHinge * sine;
   float perspective = eye / (eye - depth);
   vec2 plane;
-  plane.y = fromHinge * cosine * perspective;
+  plane.y = 1.0 - fromHinge * cosine * perspective;
   plane.x = 0.5 + (v_uv.x - 0.5) * perspective;
 
   // Defocus
