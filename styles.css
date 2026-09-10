@@ -1,5 +1,12 @@
 :root {
   --bg: url("backgrounds/default.png");
+
+  --fold: 0;
+  --shift-x: 0px;
+  --shift-y: 0px;
+  --void-angle: 0deg;
+  --void-edge: -40%;
+  --void-soft: 0%;
 }
 
 * {
@@ -24,10 +31,40 @@ body {
 .screen {
   position: fixed;
   inset: 0;
+  overflow: hidden;
+}
+
+/* World-locked picture */
+.content {
+  position: absolute;
+  inset: 0;
+  transform:
+    translate3d(var(--shift-x), var(--shift-y), 0)
+    scale(calc(1.08 - var(--fold) * 0.05));
+  opacity: calc(1 - var(--fold) * 0.55);
+  will-change: transform, opacity;
 }
 
 .layer {
   position: absolute;
   inset: 0;
   background: var(--bg) center / cover no-repeat;
+}
+
+/* Frosted glass */
+.layer--frost {
+  filter: blur(28px) saturate(1.4) brightness(1.2);
+  opacity: var(--fold);
+  will-change: opacity;
+}
+
+/* Void */
+.void {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    var(--void-angle),
+    #000 var(--void-edge),
+    transparent var(--void-soft)
+  );
 }
