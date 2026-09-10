@@ -1,6 +1,6 @@
 const DB_NAME = 'solo';
 const STORE = 'settings';
-const KEY = 'background';
+const KEY = scene.storageKey;
 
 const picker = document.querySelector('.picker');
 const reset = document.querySelector('[data-action="reset"]');
@@ -34,7 +34,7 @@ let url = null;
 function applyBackground(blob) {
   if (url) URL.revokeObjectURL(url);
   url = blob ? URL.createObjectURL(blob) : null;
-  renderer?.load(url || DEFAULT_IMAGE);
+  scene.renderer?.load(url || scene.defaultImage);
   reset.hidden = !blob;
 }
 
