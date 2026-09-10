@@ -1,3 +1,5 @@
+const MAX_STRETCH = 1.7;
+
 const VERTEX = `#version 300 es
 precision highp float;
 layout(location = 0) in vec2 a_position;
@@ -21,6 +23,7 @@ out vec4 outColor;
 
 const float HALF_PI = 1.570796327;
 const float BLUR = 0.0315;
+const float MAX_TILT = ${Math.acos(1 / MAX_STRETCH).toFixed(6)};
 const vec3 DARK = vec3(0.003, 0.004, 0.005);
 
 vec3 sampleImage(vec2 uv, float sigma) {
@@ -42,8 +45,9 @@ void main() {
   float outer = 1.0 - u_hinge;
   float fromHinge = abs(v_uv.x - u_hinge);
   float tilt = turn * HALF_PI;
-  float cosine = max(0.0, cos(tilt));
-  float sine = sin(tilt);
+  float bend = min(tilt, MAX_TILT);
+  float cosine = cos(bend);
+  float sine = sin(bend);
 
   float eye = 2.4 * max(u_aspect, 1.0);
   float depth = fromHinge * u_aspect * sine;
