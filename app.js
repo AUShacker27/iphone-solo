@@ -91,8 +91,17 @@ async function requestGyro() {
   return true;
 }
 
+// Pointer fallback
+function onPointer(e) {
+  const nx = e.clientX / innerWidth * 2 - 1;
+  const ny = e.clientY / innerHeight * 2 - 1;
+  tilt.x = nx * MAX_TILT;
+  tilt.y = ny * MAX_TILT;
+}
+
 gate.addEventListener('click', async () => {
-  await requestGyro();
+  const gyro = await requestGyro();
+  if (!gyro) window.addEventListener('pointermove', onPointer);
   gate.classList.add('is-hidden');
   started = true;
 }, { once: true });
