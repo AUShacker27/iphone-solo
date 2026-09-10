@@ -32,8 +32,9 @@
 
   <section class="unavailable" hidden>
     <div class="unavailable__body glass">
-      <h1>Open on your phone</h1>
-      <p>
+      <h1 class="only-phone">Open on your phone</h1>
+      <h1 class="only-laptop">Something is missing</h1>
+      <p class="only-phone">
         iPhone Solo needs live gravity readings.
         Open this page in Safari on your iPhone, allow motion access,
         then face the screen toward the sky.
@@ -82,9 +83,50 @@
     </form>
   </dialog>
 
+  <dialog class="card card--lid glass">
+    <div class="card__icon glass">
+      <svg viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M6 24h24M8 24l3-13a2 2 0 0 1 2-1.5h10a2 2 0 0 1 2 1.5l3 13"/>
+        <path d="M4 27a2 2 0 0 0 2 2h24a2 2 0 0 0 2-2v-3H4z"/>
+      </svg>
+    </div>
+    <h2>Read the Lid</h2>
+    <p>
+      Solo folds the picture as you close your MacBook.
+      The hinge angle comes from a small bridge running on your Mac.
+    </p>
+    <ol class="steps">
+      <li>Download <a class="card__link" href="bridge/lid-bridge.py" download>lid-bridge.py</a>.</li>
+      <li>In Terminal: <code>pip3 install hidapi &amp;&amp; python3 ~/Downloads/lid-bridge.py</code></li>
+      <li>Close the lid slowly.</li>
+    </ol>
+    <p class="card__status" role="status">Waiting for the bridge…</p>
+    <button class="card__button card__button--quiet" type="button" data-action="preview">Preview with scroll instead</button>
+  </dialog>
+
+  <dialog class="card card--dock glass">
+    <div class="card__icon glass">
+      <svg viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="4" y="7" width="28" height="18" rx="3"/>
+        <path d="M9 30h18M14 16l4 4 4-4M18 20v-9"/>
+      </svg>
+    </div>
+    <h2>Add to Dock</h2>
+    <p>
+      Solo opens in its own window, without browser bars.
+      In Safari choose File → Add to Dock.
+      In Chrome use Install from the address bar.
+    </p>
+    <form method="dialog">
+      <button class="card__button" type="submit">Got It</button>
+    </form>
+  </dialog>
+
   <script src="gl.js"></script>
   <script src="fold.js"></script>
+  <script src="lid.js"></script>
   <script src="phone.js"></script>
+  <script src="laptop.js"></script>
   <script src="app.js"></script>
   <script src="background.js"></script>
 </body>

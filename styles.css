@@ -90,7 +90,9 @@ body {
   pointer-events: none;
 }
 
-.is-app .pill--browser {
+.is-app .pill--browser,
+.is-phone .only-laptop,
+.is-laptop .only-phone {
   display: none;
 }
 
@@ -318,6 +320,34 @@ body {
 .card__button:disabled {
   opacity: 0.6;
   cursor: wait;
+}
+
+.card__button--quiet {
+  background: var(--glass-sheen), var(--glass-fill);
+  box-shadow: var(--glass-rim);
+  color: #fff;
+}
+
+.card__link {
+  color: #fff;
+  text-underline-offset: 3px;
+}
+
+.card code {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: rgb(0 0 0 / 0.3);
+  box-shadow: var(--glass-rim);
+  font: 500 13px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+  -webkit-user-select: all;
+  user-select: all;
+}
+
+.card p.card__status {
+  margin-bottom: 16px;
+  color: rgb(255 255 255 / 0.6);
+  font-size: 14px;
 }
 
 .steps {

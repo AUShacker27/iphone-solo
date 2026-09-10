@@ -10,7 +10,16 @@ const unavailable = document.querySelector('.unavailable');
 const status = unavailable.querySelector('.unavailable__status');
 const retry = unavailable.querySelector('[data-action="retry"]');
 const installCard = document.querySelector('.card--install');
+const dockCard = document.querySelector('.card--dock');
 const fullscreen = document.querySelector('[data-action="fullscreen"]');
+
+// Device
+const params = new URLSearchParams(location.search);
+const laptop = params.has('mode')
+  ? params.get('mode') === 'laptop'
+  : navigator.maxTouchPoints === 0 && matchMedia('(pointer: fine)').matches;
+
+document.documentElement.classList.add(laptop ? 'is-laptop' : 'is-phone');
 
 // Launch mode
 const launchedAsApp = Boolean(navigator.standalone)
@@ -43,16 +52,18 @@ function hideUnavailable() {
 }
 
 // Install guide
+const installGuide = laptop ? dockCard : installCard;
+
 function onboard(done) {
   if (launchedAsApp || localStorage.getItem(INSTALL_KEY)) {
     done();
     return;
   }
 
-  installCard.addEventListener('close', done, { once: true });
+  installGuide.addEventListener('close', done, { once: true });
   setTimeout(() => {
     localStorage.setItem(INSTALL_KEY, '1');
-    installCard.showModal();
+    installGuide.showModal();
   }, INSTALL_DELAY_MS);
 }
 
@@ -73,7 +84,7 @@ document.addEventListener('fullscreenchange', () => {
 });
 
 // Scene
-const scene = createPhoneScene(canvas);
+const scene = laptop ? createLaptopScene(canvas) : createPhoneScene(canvas);
 
 if (scene.renderer) {
   scene.renderer.load(scene.defaultImage);
