@@ -1,9 +1,10 @@
 {
+  "id": "./",
   "name": "iPhone Solo",
   "short_name": "Solo",
   "start_url": "./",
   "scope": "./",
-  "display": "standalone",
+  "display": "fullscreen",
   "orientation": "portrait",
   "background_color": "#000000",
   "theme_color": "#000000",
