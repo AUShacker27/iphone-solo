@@ -1,4 +1,4 @@
-const MAX_TILT = 32;
+const MAX_TILT = 40;
 const DEAD_ZONE = 2;
 const SHIFT = 28;
 const SMOOTHING = 0.14;
@@ -55,6 +55,8 @@ function smoothstep(t) {
   return t * t * (3 - 2 * t);
 }
 
+let angle = 270;
+
 function frame() {
   eased.x += (tilt.x - eased.x) * SMOOTHING;
   eased.y += (tilt.y - eased.y) * SMOOTHING;
@@ -62,7 +64,7 @@ function frame() {
 
   const dist = Math.hypot(eased.x, eased.y);
   const fold = Math.max(veil, smoothstep((dist - DEAD_ZONE) / (MAX_TILT - DEAD_ZONE)));
-  const angle = Math.atan2(-eased.x, eased.y) / DEG;
+  if (dist > DEAD_ZONE) angle = Math.atan2(-eased.x, eased.y) / DEG;
 
   root.setProperty('--fold', fold.toFixed(3));
   root.setProperty('--shift-x', `${(-eased.x / MAX_TILT * SHIFT).toFixed(1)}px`);

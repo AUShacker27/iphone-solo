@@ -4,7 +4,7 @@
   --fold: 0;
   --shift-x: 0px;
   --shift-y: 0px;
-  --void-angle: 0deg;
+  --void-angle: 270deg;
   --void-edge: -40%;
   --void-soft: 0%;
 }
@@ -41,7 +41,7 @@ body {
   transform:
     translate3d(var(--shift-x), var(--shift-y), 0)
     scale(calc(1.08 - var(--fold) * 0.05));
-  opacity: calc(1 - var(--fold) * 0.55);
+  opacity: calc(1 - var(--fold) * 0.45);
   will-change: transform, opacity;
 }
 
@@ -53,7 +53,8 @@ body {
 
 /* Frosted glass */
 .layer--frost {
-  filter: blur(28px) saturate(1.4) brightness(1.2);
+  transform: scale(1.12);
+  filter: blur(28px) saturate(1.5) brightness(1.25);
   opacity: var(--fold);
   will-change: opacity;
 }
@@ -81,9 +82,7 @@ body {
   margin: 0;
   padding: 0;
   border: 0;
-  background: rgb(0 0 0 / 0.35);
-  -webkit-backdrop-filter: blur(24px) saturate(1.4);
-  backdrop-filter: blur(24px) saturate(1.4);
+  background: rgb(0 0 0 / 0.2);
   color: inherit;
   font: inherit;
   cursor: pointer;
