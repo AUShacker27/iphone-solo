@@ -19,19 +19,19 @@
 
   <div class="chrome">
     <div class="actions">
-      <label class="pill">
+      <label class="pill glass">
         Choose image
         <input class="picker" type="file" accept="image/*">
       </label>
-      <button class="pill" type="button" data-action="reset" hidden>Use default</button>
-      <button class="pill pill--browser" type="button" data-action="fullscreen">Fullscreen</button>
-      <a class="pill pill--browser" href="https://github.com/soloiaros/iphone-solo">GitHub</a>
+      <button class="pill glass" type="button" data-action="reset" hidden>Use default</button>
+      <button class="pill pill--browser glass" type="button" data-action="fullscreen">Fullscreen</button>
+      <a class="pill pill--browser glass" href="https://github.com/soloiaros/iphone-solo">GitHub</a>
     </div>
-    <p class="hint" role="status" hidden></p>
+    <p class="hint glass" role="status" hidden></p>
   </div>
 
   <section class="unavailable" hidden>
-    <div class="unavailable__body">
+    <div class="unavailable__body glass">
       <h1>Open on your phone</h1>
       <p>
         iPhone Solo needs live gravity readings.
@@ -39,13 +39,13 @@
         then face the screen toward the sky.
       </p>
       <p class="unavailable__status" role="status" hidden></p>
-      <button class="pill" type="button" data-action="retry" hidden>Enable motion</button>
+      <button class="pill glass" type="button" data-action="retry" hidden>Enable motion</button>
       <a class="unavailable__link" href="https://github.com/soloiaros/iphone-solo">Source on GitHub</a>
     </div>
   </section>
 
-  <dialog class="card card--motion">
-    <div class="card__icon">
+  <dialog class="card card--motion glass">
+    <div class="card__icon glass">
       <svg viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <rect x="11" y="5" width="14" height="26" rx="3.5" transform="rotate(-12 18 18)"/>
         <path d="M6 13a14 14 0 0 0-1 11m0 0-3-3m3 3 3-3M30 23a14 14 0 0 0 1-11m0 0-3 3m3-3 3 3"/>
@@ -59,8 +59,8 @@
     <button class="card__button" type="button" data-action="enable" autofocus>Continue</button>
   </dialog>
 
-  <dialog class="card card--install">
-    <div class="card__icon">
+  <dialog class="card card--install glass">
+    <div class="card__icon glass">
       <svg viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <path d="M12 13H9a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V15a2 2 0 0 0-2-2h-3"/>
         <path d="M18 4v18M12.5 9.5 18 4l5.5 5.5"/>
@@ -73,9 +73,9 @@
       without Safari’s bars, and keeps your photo.
     </p>
     <ol class="steps">
-      <li>Tap the Share button in Safari.</li>
-      <li>Scroll and choose Add to Home Screen.</li>
-      <li>Tap Add, then open Solo from the icon.</li>
+      <li>Tap Share in Safari.</li>
+      <li>Choose Add to Home Screen.</li>
+      <li>Tap Add and open Solo from the icon.</li>
     </ol>
     <form method="dialog">
       <button class="card__button" type="submit">Got It</button>
