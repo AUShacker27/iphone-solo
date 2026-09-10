@@ -40,6 +40,8 @@ function createLaptopScene(canvas) {
   let velocity = 0;
   let coasting = false;
   let pollTimer = 0;
+  let streamLive = false;
+  let streamSource = null;
 
   document.documentElement.classList.add(hid ? 'has-hid' : 'no-hid');
 
@@ -71,6 +73,7 @@ function createLaptopScene(canvas) {
 
   function onAngle(angle, fromHid) {
     if (!Number.isFinite(angle)) return;
+    if (fromHid && streamLive) return;
     const now = performance.now();
     if (fromHid && lastAngle != null && lastSample) {
       const dt = (now - lastSample) / 1000;
@@ -178,11 +181,35 @@ function createLaptopScene(canvas) {
     }
   }
 
-  // Bridge
-  function connectBridge() {
-    const source = new EventSource(BRIDGE_URL);
-    source.onmessage = (e) => onAngle(Number(e.data), false);
-    source.onopen = () => begin('Close the lid slowly to fold the picture.');
+  // Stream
+  function attachStream(source) {
+    if (streamSource && streamSource !== source) {
+      source.close();
+      return;
+    }
+    streamSource = source;
+    streamLive = true;
+    coasting = false;
+    source.onmessage = (e) => {
+      streamLive = true;
+      onAngle(Number(e.data), false);
+    };
+    source.onerror = () => { streamLive = false; };
+    begin('Close the lid slowly to fold the picture.');
+  }
+
+  function connectStream(url, persist) {
+    const source = new EventSource(url);
+    source.onopen = () => attachStream(source);
+    source.onerror = () => {
+      if (!persist && source.readyState !== EventSource.OPEN) source.close();
+    };
+  }
+
+  function connectStreams() {
+    const local = new URL('lid', location.href).href;
+    connectStream(local, false);
+    if (local !== BRIDGE_URL) connectStream(BRIDGE_URL, true);
   }
 
   // Preview
@@ -217,7 +244,7 @@ function createLaptopScene(canvas) {
     renderer,
     live: () => live,
     async start() {
-      connectBridge();
+      connectStreams();
       await reconnect();
       if (!live) lidSheet.showModal();
     },

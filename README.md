@@ -32,21 +32,21 @@ where a Fullscreen pill explains the steps above.
 
 Chrome can talk to the lid angle sensor directly through WebHID,
 so nothing needs to be installed.
+That path only gets a tick about once a second.
+
+For a fold that follows the hinge at sixty frames a second,
+run the local stream (it polls the HID feature report):
+
+    python3 bridge/lid-bridge.py --serve
+
+Then open `http://127.0.0.1:3000/` (or point the Cloudflare tunnel at it).
+The page reads `/lid` from the same origin.
+`--serve` also keeps `127.0.0.1:8471/lid` for a tab opened elsewhere.
 
 1. Open the site in Chrome (or another Chromium browser) on the Mac.
-2. Click **Allow lid sensor** and pick the Apple device
-   in Chrome's list. It may show up as an unknown device
-   with the id `05ac:8104`.
+2. If the stream is not running, click **Allow lid sensor**
+   and pick the Apple device in Chrome's list.
 3. Close the lid slowly.
-
-Chrome does not remember the grant for this sensor
-(it reports no serial number), so the sheet asks again
-each time the page is opened.
-Chrome only receives the sensor's input reports,
-about once a second; the page coasts on the last velocity
-so the fold does not wait for the next tick.
-The Python bridge below polls sixty times a second
-and feels immediate if you run it.
 
 The fold maps lid degrees to turn 0–1.
 `FOLD_OPEN` and `FOLD_CLOSED` in `laptop.js` set that span.
@@ -64,14 +64,18 @@ The Fullscreen pill uses the real fullscreen API here.
 
 ### The bridge
 
-`bridge/lid-bridge.py` reads the same sensor with `hidapi`
-and streams it on `127.0.0.1:8471/lid` sixty times a second.
-Run it with plain `python3 lid-bridge.py`:
-on first launch it creates a private virtualenv
+`bridge/lid-bridge.py` polls the lid with HID feature reports
+and streams the angle on `/lid` sixty times a second.
+Run it with `python3 lid-bridge.py`.
+On first launch it creates a private virtualenv
 under `~/Library/Application Support/iPhone Solo`
 and installs `hidapi` there,
 which sidesteps Homebrew's externally-managed-environment error.
-Any browser connects to it on its own.
+
+`--serve` hosts the site on port 3000 as well,
+so a tunnel or a local tab can use the high-rate stream
+without a second process. The page tries same-origin `/lid`
+first, then `127.0.0.1:8471/lid`, then WebHID.
 
 Device detection is a fine pointer with no touch points.
 Append `?mode=laptop` or `?mode=phone` to force either.
@@ -126,8 +130,8 @@ The two folds are separate shaders:
 `phone.js` reads gravity from `devicemotion`,
 turns it into a roll angle, doubles it
 and clamps it to a half turn.
-`laptop.js` reads the lid angle from WebHID input reports,
-or from the bridge when one is running.
+`laptop.js` reads the lid angle from the 60 Hz feature-report stream
+when one is running, then WebHID, then the trackpad.
 Both ease toward their target every frame
 and hand `app.js` a small scene object,
 which keeps the hints, sheets, controls and render loop shared.
