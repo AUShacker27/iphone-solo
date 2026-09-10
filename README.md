@@ -13,6 +13,10 @@ Hold the phone flat, screen to the sky, and the picture is sharp.
 Roll it left or right, like closing a book,
 and the display folds away from the edge you lift.
 
+On a laptop the hinge is real.
+The same fold runs along the bottom edge of the screen
+and follows the lid as you close it.
+
 ## Install
 
 1. Host the folder anywhere that serves it over HTTPS
@@ -23,6 +27,36 @@ and the display folds away from the edge you lift.
 
 The page also runs in a Safari tab,
 where a Fullscreen pill explains the steps above.
+
+## On a MacBook
+
+Browsers have no API for the lid angle,
+so a small bridge reads the sensor and hands it to the page.
+
+1. Open the site in Safari or Chrome on the Mac.
+2. Download `bridge/lid-bridge.py` from the card
+   (or from this repo) and run it:
+
+   ```sh
+   pip3 install hidapi
+   python3 lid-bridge.py
+   ```
+
+3. The card closes on its own once the bridge connects.
+   Close the lid slowly.
+
+The bridge streams the angle on `127.0.0.1:8471/lid`
+sixty times a second.
+The widest angle seen counts as flat
+and the fold completes at fifteen degrees.
+Without the bridge, scroll or the arrow keys preview the fold.
+The sensor ships in MacBooks from 2019 on.
+The Fullscreen pill uses the real fullscreen API here,
+and a one-time card points to Safari's Add to Dock
+or Chrome's Install for a window without browser bars.
+
+Device detection is a fine pointer with no touch points.
+Append `?mode=laptop` or `?mode=phone` to force either.
 
 ## Controls
 
@@ -39,29 +73,42 @@ after that they start hidden.
 
 ## Backgrounds
 
-The default picture lives in `backgrounds/default.png`.
-To ship a different one, replace that file
-or change `DEFAULT_IMAGE` at the top of `app.js`.
-A photo chosen on the phone is stored on the device
-in IndexedDB and used until *Use default* is tapped.
+The default pictures live in `backgrounds/`:
+`default.png` for phones and `default-mac.jpg` for laptops.
+To ship different ones, replace those files
+or change `defaultImage` in `phone.js` and `laptop.js`.
+Use a screenshot at the device's native resolution;
+the blur is sampled from the image's own mip chain,
+so a small picture goes soft sooner.
+A photo chosen on the device is stored in IndexedDB,
+separately per mode, and used until *Use default* is tapped.
 Images are drawn with cover, so nothing is stretched
 and there are no borders.
 
 ## How it works
 
-`render.js` draws everything on a WebGL 2 canvas.
+Everything is drawn on a WebGL 2 canvas.
+`gl.js` owns the shared stage: context, quad,
+texture upload, the Gaussian mip chain built once per image,
+cover mapping and the sampling helper.
 The canvas is treated as the physical display:
 each pixel is projected into a stationary image plane
-that rotates about a hinge at the left or right edge,
-with perspective, so the whole width stays painted
-and only the top and bottom margins open up.
-Blur is sampled from a Gaussian mip chain
-built once whenever an image is loaded,
-and grows with the tilt and with the distance from the hinge.
-A glass tint, a faint reflection
-and a black fade toward the far edge finish it.
+that rotates about a hinge, with perspective,
+so the span across the hinge stays painted
+and only the margins along it open up.
+Blur grows with the tilt and with the distance from the hinge,
+then a glass tint, a faint reflection
+and a black fade toward the far edge finish it,
+and the geometry stops bending once the picture
+would stretch past `MAX_STRETCH`.
 
-`app.js` reads gravity from `devicemotion`,
+The two folds are separate shaders:
+`fold.js` puts the hinge on the left or right edge for phones,
+`lid.js` puts it along the bottom edge for laptops.
+`phone.js` reads gravity from `devicemotion`,
 turns it into a roll angle, doubles it
-and clamps it to a half turn,
-then eases toward it every frame.
+and clamps it to a half turn.
+`laptop.js` reads the lid angle from the bridge.
+Both ease toward their target every frame
+and hand `app.js` a small scene object,
+which keeps the hints, cards, controls and render loop shared.
