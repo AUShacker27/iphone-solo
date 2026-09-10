@@ -27,6 +27,18 @@
     <span class="gate__hint">Tap to unfold</span>
   </button>
 
+  <div class="sheet" hidden>
+    <div class="sheet__group">
+      <button class="sheet__item" type="button" data-action="pick">Choose Photo</button>
+      <button class="sheet__item" type="button" data-action="reset">Use Default</button>
+    </div>
+    <div class="sheet__group">
+      <button class="sheet__item sheet__item--cancel" type="button" data-action="close">Cancel</button>
+    </div>
+  </div>
+  <input class="picker" type="file" accept="image/*" hidden>
+
   <script src="app.js"></script>
+  <script src="background.js"></script>
 </body>
 </html>
